@@ -1,0 +1,164 @@
+@page
+@model ReviewModel
+@{
+    ViewData["Title"] = "Review";
+    var r = Model.Report;
+    var i = r.Insights;
+
+    // async because it contains tag helpers (asp-page links).
+    async Task Notable(string title, IReadOnlyList<DayLog.Web.Services.NotableDay> list)
+    {
+        <div class="notable">
+            <h3>@title</h3>
+            @if (list.Count == 0)
+            {
+                <p class="muted">Needs at least 2 rated days.</p>
+            }
+            <ul>
+                @foreach (var n in list)
+                {
+                    <li>
+                        <a asp-page="/History" asp-route-date="@n.Day.Date.ToString("yyyy-MM-dd")">
+                            <span class="swatch lvl-@n.Day.DayRating">@n.Day.DayRating</span>
+                            <span>
+                                <strong>@n.Day.Date.ToString("ddd d MMM")</strong>
+                                <span class="muted">@n.Why</span>
+                            </span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+}
+
+<div class="page-head">
+    <h1>Review</h1>
+</div>
+
+@* ---- Range picker: quick presets, or any from/to (plain GET form, so the URL is shareable/bookmarkable). *@
+<section class="card-surface range-card" aria-label="Date range">
+    <nav class="preset-row" aria-label="Quick ranges">
+        @foreach (var p in Model.Presets)
+        {
+            var active = p.From == r.From && p.To == r.To;
+            <a class="chip @(active ? "active" : "")" aria-current="@(active ? "true" : null)"
+               asp-page="/Review" asp-route-from="@p.From.ToString("yyyy-MM-dd")" asp-route-to="@p.To.ToString("yyyy-MM-dd")">@p.Label</a>
+        }
+    </nav>
+    <form method="get" class="range-form">
+        <label>From <input type="date" name="from" value="@r.From.ToString("yyyy-MM-dd")" max="@r.Today.ToString("yyyy-MM-dd")" required></label>
+        <label>To <input type="date" name="to" value="@r.To.ToString("yyyy-MM-dd")" max="@r.Today.ToString("yyyy-MM-dd")" required></label>
+        <button class="chip">Show</button>
+    </form>
+    <p class="muted range-note">@r.From.ToString("ddd d MMM") – @r.To.ToString("ddd d MMM yyyy") · @r.DaysLogged of @r.DaysInRange days have entries</p>
+    @if (r.DemoRows > 0)
+    {
+        <p class="demo-warning">⚠️ @r.DemoRows entries in this period are demo data. Wipe them in Settings before your real review.</p>
+    }
+</section>
+
+@* ---- Export *@
+<section class="card-surface export-card" aria-labelledby="h-export">
+    <h2 id="h-export">Export for review</h2>
+    <p class="muted">A markdown summary written as a brief for Claude (paste it in and ask for an honest review), plus a CSV of every raw entry in this period.</p>
+    <div class="export-actions">
+        <a class="btn-save export-main" href="/export/review.zip?@Model.RangeQuery">⬇ Export for review (.zip)</a>
+        <button type="button" class="chip" data-copy-summary="/export/review.md?@Model.RangeQuery&download=false">📋 Copy summary</button>
+        <a class="chip" href="/export/review.md?@Model.RangeQuery">Summary (.md)</a>
+        <a class="chip" href="/export/data.csv?@Model.RangeQuery">Raw data (.csv)</a>
+    </div>
+    <p class="hint muted" data-copy-status aria-live="polite"></p>
+</section>
+
+@* ---- Averages *@
+<section class="stats" aria-label="Averages">
+    <div class="stat kpi"><div class="stat-label">Sleep</div><div class="stat-value">@ReviewModel.Hm(r.Avg(d => d.SleepHours))</div><div class="stat-sub">avg / night</div></div>
+    <div class="stat kpi"><div class="stat-label">Energy</div><div class="stat-value">@ReviewModel.One(r.Avg(d => d.AvgEnergy))</div><div class="stat-sub">avg of 5</div></div>
+    <div class="stat kpi"><div class="stat-label">Day rating</div><div class="stat-value">@ReviewModel.One(r.Avg(d => d.DayRating))</div><div class="stat-sub">avg of 5</div></div>
+    <div class="stat kpi"><div class="stat-label">Exercise</div><div class="stat-value">@r.Days.Count(d => d.ExerciseMinutes > 0)</div><div class="stat-sub">days</div></div>
+</section>
+
+<section class="card-surface" aria-labelledby="h-more">
+    <h2 id="h-more">More averages</h2>
+    <dl class="kv">
+        <dt>Typical bedtime / wake</dt><dd>@(i.Sleep.AvgBedTime ?? "–") / @(i.Sleep.AvgWakeTime ?? "–")</dd>
+        <dt>Nights under 6h / 7h+</dt><dd>@i.Sleep.ShortNights / @i.Sleep.LongNights of @i.Sleep.Nights</dd>
+        <dt>Sleep quality</dt><dd>@ReviewModel.One(r.Avg(d => d.SleepQuality)) / 5</dd>
+        <dt>Sleepiness</dt><dd>@ReviewModel.One(r.Avg(d => d.AvgSleepiness)) / 5</dd>
+        <dt>Mood</dt><dd>@ReviewModel.One(r.Avg(d => d.AvgMood)) / 5</dd>
+        <dt>Caffeine per logged day</dt><dd>@ReviewModel.One(r.AvgPerLoggedDay(d => d.CaffeineDrinks)) drinks · ~@((r.AvgPerLoggedDay(d => d.CaffeineMg) ?? 0).ToString("0")) mg</dd>
+        <dt>Days with caffeine after 15:00</dt><dd>@r.Days.Count(d => d.LastCaffeine >= new TimeOnly(15, 0))</dd>
+        <dt>Breakfast skipped</dt><dd>@r.Days.Count(d => d.AteBreakfast == false) days</dd>
+        <dt>Water per logged day</dt><dd>@ReviewModel.One(r.AvgPerLoggedDay(d => d.WaterGlasses)) glasses</dd>
+    </dl>
+</section>
+
+@* ---- Best & hardest days *@
+<section class="card-surface notable-grid" aria-label="Best and hardest days">
+    @{ await Notable("Best days", r.BestDays); }
+    @{ await Notable("Hardest days", r.HardestDays); }
+</section>
+
+@* ---- Streaks *@
+<section class="card-surface" aria-labelledby="h-streaks">
+    <h2 id="h-streaks">Streaks</h2>
+    <div class="table-scroll">
+        <table class="plain-table">
+            <thead><tr><th>Habit</th><th>Current</th><th>Longest</th><th>Days met</th></tr></thead>
+            <tbody>
+            @foreach (var s in r.Streaks)
+            {
+                <tr>
+                    <td><strong>@s.Name</strong><br><span class="muted small">@s.Description</span></td>
+                    <td class="num">@s.Current</td>
+                    <td class="num">@s.Longest@(s.Longest > 0 ? $" ({s.LongestFrom:d MMM}–{s.LongestTo:d MMM})" : "")</td>
+                    <td class="num">@s.DaysMet / @s.DaysCounted</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <p class="hint muted">Days a habit doesn't apply to (e.g. no breakfast logged) don't break a streak. Today counts once it's met.</p>
+</section>
+
+@* ---- Patterns (same as the Insights page) *@
+<section class="card-surface" aria-labelledby="h-patterns">
+    <h2 id="h-patterns">Patterns</h2>
+    <ul class="pattern-list">
+        @foreach (var (name, t) in new[]
+        {
+            ("Sleep", i.SleepTakeaway), ("Energy through the day", i.HourlyTakeaway),
+            ("Short vs long nights", i.SleepVsEnergyTakeaway), ("Caffeine timing vs sleep", i.CaffeineTakeaway),
+            ("Breakfast vs morning energy", i.BreakfastTakeaway), ("Where the time goes", i.ActivityTakeaway),
+            ("Day rating", i.RatingTakeaway),
+        })
+        {
+            <li class="@(t.Enough ? "" : "muted")"><strong>@name.</strong> @t.Text</li>
+        }
+    </ul>
+    <p class="hint"><a asp-page="/Insights" asp-route-days="@(r.DaysInRange is 7 or 14 or 30 or 90 ? r.DaysInRange : 30)">See the charts →</a></p>
+</section>
+
+@* ---- Reflections *@
+<section aria-labelledby="h-reflections">
+    <h2 id="h-reflections" class="list-title">Reflections <span class="muted">(@r.Reflections.Count())</span></h2>
+    @if (!r.Reflections.Any())
+    {
+        <p class="muted">No reflections in this period.</p>
+    }
+    @foreach (var d in r.Reflections)
+    {
+        var refl = d.Reflection!;
+        <a class="reflection-card" asp-page="/History" asp-route-date="@d.Date.ToString("yyyy-MM-dd")">
+            <span class="reflection-head"><strong>@d.Date.ToString("ddd d MMM")</strong><span class="swatch lvl-@refl.DayRating">@refl.DayRating</span></span>
+            @if (refl.WentWell is not null) { <span class="refl-row"><em>Went well</em>@refl.WentWell</span> }
+            @if (refl.DidntGoWell is not null) { <span class="refl-row"><em>Didn't</em>@refl.DidntGoWell</span> }
+            @if (refl.DoDifferently is not null) { <span class="refl-row"><em>Tomorrow</em>@refl.DoDifferently</span> }
+        </a>
+    }
+</section>
+
+@section Scripts {
+    <script src="~/js/review.js" asp-append-version="true"></script>
+}

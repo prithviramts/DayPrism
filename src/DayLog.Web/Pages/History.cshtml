@@ -1,0 +1,15 @@
+@page
+@model HistoryModel
+@{
+    ViewData["Title"] = "History";
+}
+
+<div id="day-content">
+    <partial name="_HistoryContent" model="Model" />
+</div>
+
+<partial name="_EntrySheets" />
+
+@section Scripts {
+    <script src="~/js/daylog.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,185 @@
+@page
+@using DayLog.Web.Domain
+@model InsightsModel
+@{
+    ViewData["Title"] = "Insights";
+    var r = Model.Report;
+
+    // Takeaway line under each chart title. Muted when there isn't enough data to conclude anything.
+    void Takeaway(DayLog.Web.Services.Takeaway t)
+    {
+        <p class="takeaway @(t.Enough ? "" : "muted")">@t.Text</p>
+    }
+
+    var activeCategories = r.Weeks.SelectMany(w => w.HoursByCategory.Keys).Distinct()
+        .Select(Enum.Parse<ActivityCategory>).Order().ToList();
+}
+
+<div class="page-head">
+    <h1>Insights</h1>
+    <nav class="range-chips" aria-label="Date range">
+        @foreach (var days in InsightsModel.RangeOptions)
+        {
+            <a asp-page="/Insights" asp-route-days="@days" aria-current="@(days == Model.Days ? "true" : null)">@days days</a>
+        }
+    </nav>
+</div>
+<p class="muted range-note">@r.From.ToString("d MMM") – @r.To.ToString("d MMM yyyy") · @r.Summary.DaysLogged of @r.Days days have entries</p>
+
+<section class="stats" aria-label="Averages for the period">
+    <div class="stat kpi"><div class="stat-label">Sleep</div><div class="stat-value">@InsightsModel.Hm(r.Summary.AvgSleepHours)</div><div class="stat-sub">avg / night</div></div>
+    <div class="stat kpi"><div class="stat-label">Energy</div><div class="stat-value">@InsightsModel.One(r.Summary.AvgEnergy)</div><div class="stat-sub">avg of 5</div></div>
+    <div class="stat kpi"><div class="stat-label">Day rating</div><div class="stat-value">@InsightsModel.One(r.Summary.AvgDayRating)</div><div class="stat-sub">avg of 5</div></div>
+    <div class="stat kpi"><div class="stat-label">Caffeine</div><div class="stat-value">@(r.Summary.AvgCaffeineMg is { } mg ? $"{mg:0}" : "–")</div><div class="stat-sub">mg / day</div></div>
+</section>
+
+@* ---------------------------------------------------------------- 1. Sleep *@
+<section class="chart-card" aria-labelledby="h-sleep">
+    <h2 id="h-sleep">Sleep: bedtime, wake time and duration</h2>
+    @{ Takeaway(r.SleepTakeaway); }
+    @if (r.Nights.Count > 0)
+    {
+        <div class="chart-box tall"><canvas id="chart-sleep" role="img" aria-label="Each night as a bar from bedtime to wake time. @r.SleepTakeaway.Text"></canvas></div>
+        <details class="data-table"><summary>Show data</summary>
+            <table><thead><tr><th>Night ending</th><th>Bed</th><th>Wake</th><th>Duration</th><th>Quality</th></tr></thead><tbody>
+            @foreach (var n in r.Nights)
+            {
+                <tr><td>@n.Date.ToString("ddd d MMM")</td><td>@n.BedTime</td><td>@n.WakeTime</td><td>@InsightsModel.Hm(n.Hours)</td><td>@n.Quality/5</td></tr>
+            }
+            </tbody></table>
+        </details>
+    }
+</section>
+
+@* ---------------------------------------------------------------- 2. Energy by hour *@
+<section class="chart-card" aria-labelledby="h-hourly">
+    <h2 id="h-hourly">Energy and sleepiness by hour of day</h2>
+    @{ Takeaway(r.HourlyTakeaway); }
+    @if (r.Hourly.Count > 0)
+    {
+        <div class="chart-box"><canvas id="chart-hourly" role="img" aria-label="Average energy and sleepiness for each hour of the day. @r.HourlyTakeaway.Text"></canvas></div>
+        <details class="data-table"><summary>Show data</summary>
+            <table><thead><tr><th>Hour</th><th>Energy</th><th>Sleepiness</th><th>Check-ins</th></tr></thead><tbody>
+            @foreach (var h in r.Hourly)
+            {
+                <tr><td>@h.Hour.ToString("00"):00</td><td>@h.Energy.ToString("0.0")</td><td>@h.Sleepiness.ToString("0.0")</td><td>@h.CheckIns</td></tr>
+            }
+            </tbody></table>
+        </details>
+    }
+</section>
+
+@* ---------------------------------------------------------------- 3. Sleep vs next-day energy *@
+<section class="chart-card" aria-labelledby="h-sleepenergy">
+    <h2 id="h-sleepenergy">Energy after short vs long nights</h2>
+    @{ Takeaway(r.SleepVsEnergyTakeaway); }
+    @if (r.SleepBuckets.Any(b => b.Days > 0))
+    {
+        <div class="chart-box"><canvas id="chart-sleepenergy" role="img" aria-label="Average energy and sleepiness the day after under 6 hours, 6 to 7 hours, and 7 or more hours of sleep. @r.SleepVsEnergyTakeaway.Text"></canvas></div>
+        <details class="data-table"><summary>Show data</summary>
+            <table><thead><tr><th>Previous night</th><th>Days</th><th>Avg energy</th><th>Avg sleepiness</th></tr></thead><tbody>
+            @foreach (var b in r.SleepBuckets)
+            {
+                <tr><td>@b.Label</td><td>@b.Days</td><td>@InsightsModel.One(b.Energy)</td><td>@InsightsModel.One(b.Sleepiness)</td></tr>
+            }
+            </tbody></table>
+        </details>
+    }
+</section>
+
+@* ---------------------------------------------------------------- 4. Caffeine timing vs sleep *@
+<section class="chart-card" aria-labelledby="h-caffeine">
+    <h2 id="h-caffeine">Last caffeine vs that night's sleep</h2>
+    @{ Takeaway(r.CaffeineTakeaway); }
+    @if (r.CaffeinePoints.Count > 0)
+    {
+        <div class="chart-box"><canvas id="chart-caffeine" role="img" aria-label="Each day plotted by the time of the last caffeine and how long you slept that night. @r.CaffeineTakeaway.Text"></canvas></div>
+        <details class="data-table"><summary>Show data</summary>
+            <table><thead><tr><th>Last caffeine</th><th>Days</th><th>Avg sleep that night</th><th>Avg quality</th></tr></thead><tbody>
+            @foreach (var b in r.CaffeineBuckets)
+            {
+                <tr><td>@b.Label</td><td>@b.Days</td><td>@InsightsModel.Hm(b.SleepHours)</td><td>@InsightsModel.One(b.Quality)</td></tr>
+            }
+            </tbody></table>
+            <table><thead><tr><th>Day</th><th>Last caffeine</th><th>Slept</th><th>Quality</th></tr></thead><tbody>
+            @foreach (var p in r.CaffeinePoints)
+            {
+                <tr><td>@p.Date.ToString("ddd d MMM")</td><td>@p.LastCaffeineTime</td><td>@InsightsModel.Hm(p.NightSleepHours)</td><td>@p.NightQuality/5</td></tr>
+            }
+            </tbody></table>
+        </details>
+    }
+</section>
+
+@* ---------------------------------------------------------------- 5. Breakfast vs morning energy *@
+<section class="chart-card" aria-labelledby="h-breakfast">
+    <h2 id="h-breakfast">Breakfast vs energy before noon</h2>
+    @{ Takeaway(r.BreakfastTakeaway); }
+    @if (r.Breakfast.Any(b => b.Days > 0))
+    {
+        <div class="chart-box short"><canvas id="chart-breakfast" role="img" aria-label="Average morning energy on days you ate breakfast vs skipped it. @r.BreakfastTakeaway.Text"></canvas></div>
+        <details class="data-table"><summary>Show data</summary>
+            <table><thead><tr><th>Breakfast</th><th>Days</th><th>Avg energy before noon</th></tr></thead><tbody>
+            @foreach (var b in r.Breakfast)
+            {
+                <tr><td>@b.Label</td><td>@b.Days</td><td>@InsightsModel.One(b.MorningEnergy)</td></tr>
+            }
+            </tbody></table>
+        </details>
+    }
+</section>
+
+@* ---------------------------------------------------------------- 6. Time per activity per week *@
+<section class="chart-card" aria-labelledby="h-activity">
+    <h2 id="h-activity">Time per activity, by week</h2>
+    @{ Takeaway(r.ActivityTakeaway); }
+    @if (activeCategories.Count > 0)
+    {
+        <div class="chart-box tall"><canvas id="chart-activity" role="img" aria-label="Hours per week, stacked by activity group. @r.ActivityTakeaway.Text"></canvas></div>
+        <p class="hint muted">Categories are grouped by colour, as on the timeline. Weeks start on Monday; * marks a week only partly inside the range.</p>
+        <details class="data-table"><summary>Show data (hours per category)</summary>
+            <div class="table-scroll">
+            <table><thead><tr><th>Week of</th>
+                @foreach (var c in activeCategories) { <th>@DisplayNames.For(c)</th> }
+                <th>Total</th></tr></thead><tbody>
+            @foreach (var w in r.Weeks)
+            {
+                <tr><td>@w.WeekStart.ToString("d MMM")@(w.Partial ? "*" : "")</td>
+                    @foreach (var c in activeCategories) { <td>@w.HoursByCategory.GetValueOrDefault(c.ToString()).ToString("0.#")</td> }
+                    <td>@w.HoursByCategory.Values.Sum().ToString("0.#")</td></tr>
+            }
+            </tbody></table>
+            </div>
+        </details>
+    }
+</section>
+
+@* ---------------------------------------------------------------- 7. Day rating trend *@
+<section class="chart-card" aria-labelledby="h-rating">
+    <h2 id="h-rating">Day rating trend</h2>
+    @{ Takeaway(r.RatingTakeaway); }
+    @if (r.Ratings.Any(x => x.Rating is not null))
+    {
+        <div class="chart-box"><canvas id="chart-rating" role="img" aria-label="Daily day rating with a 7-day rolling average. @r.RatingTakeaway.Text"></canvas></div>
+        <details class="data-table"><summary>Show data</summary>
+            <table><thead><tr><th>Date</th><th>Rating</th><th>7-day avg</th></tr></thead><tbody>
+            @foreach (var x in r.Ratings.Where(x => x.Rating is not null))
+            {
+                <tr><td>@x.Date.ToString("ddd d MMM")</td><td>@x.Rating</td><td>@InsightsModel.One(x.RollingAverage)</td></tr>
+            }
+            </tbody></table>
+        </details>
+    }
+</section>
+
+<p class="footnote muted">
+    These are patterns in your own data, not proof of cause and effect. With only a few days in a group,
+    one unusual day can move an average a lot, so look at the number of days behind each comparison.
+</p>
+
+<script type="application/json" id="insights-data">@Json.Serialize(r)</script>
+
+@section Scripts {
+    <script src="~/lib/chartjs/chart.umd.min.js"></script>
+    <script src="~/js/insights.js" asp-append-version="true"></script>
+}

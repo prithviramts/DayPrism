@@ -1,0 +1,15 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Today";
+}
+
+<div id="day-content">
+    <partial name="_TodayContent" model="Model" />
+</div>
+
+<partial name="_EntrySheets" />
+
+@section Scripts {
+    <script src="~/js/daylog.js" asp-append-version="true"></script>
+}

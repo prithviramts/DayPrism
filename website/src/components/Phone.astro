@@ -1,0 +1,69 @@
+---
+// An original 3D phone, built from CSS layers (no device brand, no model file): a stack of
+// rounded slabs gives it real thickness, and the screen holds live HTML, so text stays sharp
+// and readable by screen readers. GSAP turns it gently as you scroll (motion.ts).
+interface Props { class?: string; tilt?: boolean }
+const { class: className = '', tilt = true } = Astro.props;
+---
+<div class:list={['phone', className, { 'phone-flat': !tilt }]}>
+  <div class="phone-body" data-phone-body>
+    {tilt && Array.from({ length: 7 }, (_, i) => <div class={`phone-slab s${i}`} aria-hidden="true"></div>)}
+    {tilt && <div class="phone-back" aria-hidden="true"></div>}
+    <div class="phone-front">
+      <div class="phone-screen">
+        <slot />
+        <span class="phone-cam" aria-hidden="true"></span>
+        <span class="phone-glare" aria-hidden="true"></span>
+      </div>
+    </div>
+    <span class="phone-btn b1" aria-hidden="true"></span>
+    <span class="phone-btn b2" aria-hidden="true"></span>
+  </div>
+</div>
+
+<style>
+  .phone { perspective: 1800px; display: grid; place-items: center; }
+  .phone-body {
+    --w: 100%;
+    position: relative;
+    width: var(--w);
+    aspect-ratio: 9 / 19.5;
+    transform-style: preserve-3d;
+    transform: rotateY(-18deg) rotateX(7deg) rotateZ(1deg);
+    will-change: transform;
+  }
+  /* Flat phones (swipe carousel, investor page): no 3D layers, just a solid edge. Cheaper. */
+  .phone-flat { perspective: none; }
+  .phone-flat .phone-body { transform: none; transform-style: flat; will-change: auto; }
+  .phone-flat .phone-front { transform: none; box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.10), 0 0 0 3px #2c3550, 0 30px 60px -28px rgba(15, 23, 42, 0.5); }
+  .phone-flat .phone-btn { display: none; }
+  .phone-slab, .phone-back, .phone-front { position: absolute; inset: 0; border-radius: 13% / 6%; }
+  .phone-slab { background: linear-gradient(90deg, #3a4462, #1a2034 40%, #2c3550); }
+  .s0 { transform: translateZ(-6px); } .s1 { transform: translateZ(-4px); } .s2 { transform: translateZ(-2px); }
+  .s3 { transform: translateZ(0); } .s4 { transform: translateZ(2px); } .s5 { transform: translateZ(4px); } .s6 { transform: translateZ(5px); }
+  .phone-back { transform: translateZ(-7px) rotateY(180deg); background: linear-gradient(135deg, #2a3557, #121729); }
+  .phone-front {
+    transform: translateZ(6px);
+    padding: 3.2%;
+    background: #0b0f1c;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.10), 0 40px 80px -30px rgba(15, 23, 42, 0.55), 0 18px 40px -20px rgba(42, 120, 214, 0.35);
+  }
+  .phone-screen {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 11% / 5.2%;
+    background: #f4f6fa;
+    container-type: inline-size;
+  }
+  .phone-cam { position: absolute; top: 1.4%; left: 50%; width: 3.6%; aspect-ratio: 1; translate: -50% 0; border-radius: 50%; background: #05070d; z-index: 5; }
+  .phone-glare {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    background: linear-gradient(115deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.06) 100%);
+  }
+  .phone-btn { position: absolute; right: -1.4%; width: 1.6%; border-radius: 2px; background: #2c3550; transform: translateZ(0); }
+  .b1 { top: 18%; height: 7%; } .b2 { top: 28%; height: 12%; }
+</style>

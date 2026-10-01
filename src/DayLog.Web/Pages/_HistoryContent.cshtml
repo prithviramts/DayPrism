@@ -1,0 +1,134 @@
+@model HistoryModel
+@{
+    var day = Model.Day;
+    var month = Model.Month;
+    string DateParam(DateOnly d) => d.ToString("yyyy-MM-dd");
+}
+
+@* Calendar + selected day. Rendered on first load and re-fetched after every edit. *@
+
+<section class="calendar" aria-label="Calendar">
+    <header class="cal-head">
+        <a class="cal-nav" asp-page="/History" asp-route-date="@DateParam(Model.PreviousMonthDate)" aria-label="Previous month">‹</a>
+        <h1>@month.Title</h1>
+        @if (Model.NextMonthDate is { } next)
+        {
+            <a class="cal-nav" asp-page="/History" asp-route-date="@DateParam(next)" aria-label="Next month">›</a>
+        }
+        else
+        {
+            <span class="cal-nav disabled" aria-hidden="true">›</span>
+        }
+    </header>
+
+    <div class="cal-grid">
+        @foreach (var name in new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" })
+        {
+            <div class="cal-dow" aria-hidden="true">@name</div>
+        }
+        @foreach (var d in month.Days)
+        {
+            // Cell shade = day rating (same light→dark scale as energy). A dot = something logged but no rating.
+            var css = $"cal-day{(d.InMonth ? "" : " out")}{(d.IsToday ? " today" : "")}{(d.Date == Model.SelectedDate ? " selected" : "")}" +
+                      (d.DayRating is { } rating ? $" rated lvl-{rating}" : "");
+            if (d.IsFuture)
+            {
+                <span class="@css future" aria-hidden="true"><span class="cal-num">@d.Date.Day</span></span>
+            }
+            else
+            {
+                <a class="@css" asp-page="/History" asp-route-date="@DateParam(d.Date)"
+                   aria-label="@d.Summary" title="@d.Summary"
+                   aria-current="@(d.Date == Model.SelectedDate ? "date" : null)">
+                    <span class="cal-num">@d.Date.Day</span>
+                    @if (d.HasData && d.DayRating is null)
+                    {
+                        <span class="cal-dot" aria-hidden="true"></span>
+                    }
+                </a>
+            }
+        }
+    </div>
+
+    <div class="cal-legend" aria-hidden="true">
+        <span>Day rating</span>
+        @for (var i = 1; i <= 5; i++)
+        {
+            <span class="swatch lvl-@i">@i</span>
+        }
+        <span class="legend-dot"><span class="cal-dot"></span> logged</span>
+        @if (Model.SelectedDate != Model.Today)
+        {
+            <a class="cal-today" asp-page="/History">Today</a>
+        }
+    </div>
+</section>
+
+<section class="day-detail" aria-label="Selected day">
+    <h2 class="day-title">@Model.SelectedDate.ToString("dddd d MMMM")</h2>
+
+    <partial name="_DayStats" model="day" />
+
+    @* Add to this day: useful for things you forgot to log. *@
+    <div class="add-row" role="group" aria-label="Add to this day">
+        <span class="muted">Add</span>
+        <button type="button" class="chip" data-open="checkin">⚡ Check-in</button>
+        <button type="button" class="chip" data-open="meal">🍽️ Meal</button>
+        <button type="button" class="chip" data-open="caffeine">☕ Caffeine</button>
+        <button type="button" class="chip" data-open="water">💧 Water</button>
+        <button type="button" class="chip" data-open="activity">▶️ Activity</button>
+        @if (day.Sleep is null)
+        {
+            <button type="button" class="chip" data-open="sleep">🛏️ Sleep</button>
+        }
+        @if (day.Reflection is null)
+        {
+            <button type="button" class="chip" data-open="reflection">📝 Reflection</button>
+        }
+    </div>
+
+    @if (day.Reflection is { } r)
+    {
+        <button type="button" class="reflection-card" data-open="reflection" aria-label="Edit reflection">
+            <span class="reflection-head">
+                <strong>Reflection</strong>
+                <span class="swatch lvl-@r.DayRating">@r.DayRating</span>
+            </span>
+            @if (r.WentWell is not null) { <span class="refl-row"><em>Went well</em>@r.WentWell</span> }
+            @if (r.DidntGoWell is not null) { <span class="refl-row"><em>Didn't</em>@r.DidntGoWell</span> }
+            @if (r.DoDifferently is not null) { <span class="refl-row"><em>Tomorrow</em>@r.DoDifferently</span> }
+        </button>
+    }
+
+    <partial name="_Timeline" model="Model.Timeline" />
+
+    <h3 class="list-title">Entries <span class="muted">(@Model.Entries.Count)</span></h3>
+    @if (Model.Entries.Count == 0)
+    {
+        <p class="muted">Nothing logged on this day.</p>
+    }
+    else
+    {
+        <ul class="entry-list">
+            @foreach (var e in Model.Entries)
+            {
+                <li>
+                    <button type="button" data-open="@e.Sheet" data-key="@e.Key" aria-label="Edit @e.Title at @e.Time.ToString("HH:mm")">
+                        <span class="entry-time">@e.Time.ToString("HH:mm")</span>
+                        <span class="entry-icon" aria-hidden="true">@e.Icon</span>
+                        <span class="entry-text">
+                            <span class="entry-title">@e.Title</span>
+                            @if (!string.IsNullOrEmpty(e.Detail))
+                            {
+                                <span class="entry-detail">@e.Detail</span>
+                            }
+                        </span>
+                        <span class="entry-edit" aria-hidden="true">Edit</span>
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+<script type="application/json" id="day-state">@Json.Serialize(Model.ClientState)</script>

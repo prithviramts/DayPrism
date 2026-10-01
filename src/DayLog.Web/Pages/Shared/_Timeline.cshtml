@@ -1,0 +1,73 @@
+@using System.Globalization
+@using DayLog.Web.Services
+@model TimelineModel
+@{
+    // Inline CSS numbers must use "." as the decimal separator whatever the server culture is.
+    static string N(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+    var lanes = new[]
+    {
+        (Lane: TimelineLane.Blocks, Title: "Sleep & activities"),
+        (Lane: TimelineLane.Intake, Title: "Food & drink"),
+        (Lane: TimelineLane.CheckIns, Title: "Energy"),
+    };
+}
+
+@*
+    Layout: every item gets CSS variables --t (start, hours from the top), --d (duration, hours)
+    and --c (column). site.css multiplies them by --hour (pixels per hour) to position things.
+    Items are buttons so they're tappable and keyboard-accessible; tapping shows details.
+*@
+<section class="timeline" aria-label="Timeline for @Model.Date.ToString("dddd d MMMM")">
+    <div class="tl-heads" aria-hidden="true">
+        @foreach (var lane in lanes)
+        {
+            <span>@lane.Title</span>
+        }
+    </div>
+
+    <div class="tl-body" style="--hours:@Model.Hours">
+        @for (var h = Model.StartHour; h <= Model.EndHour; h++)
+        {
+            <div class="tl-hour" style="--t:@(h - Model.StartHour)"><span>@(h == 24 ? "24" : h.ToString("00")):00</span></div>
+        }
+
+        <div class="tl-lanes">
+            @foreach (var lane in lanes)
+            {
+                <div class="tl-lane lane-@lane.Lane.ToString().ToLowerInvariant()">
+                    @foreach (var item in Model.Items.Where(i => i.Lane == lane.Lane))
+                    {
+                        <button type="button"
+                                class="tl-item @item.CssClass @(item.Running ? "running" : "") @(item.ClippedTop ? "clipped" : "")"
+                                style="--t:@N(item.Top);--d:@N(item.Height);--c:@item.Column"
+                                data-kind="@item.Kind" data-id="@item.Id" data-detail="@item.Detail"
+                                aria-label="@item.Detail">
+                            @if (lane.Lane == TimelineLane.Blocks)
+                            {
+                                <span class="tl-label">@item.Icon @item.Label</span>
+                            }
+                            else if (item.Icon is not null)
+                            {
+                                <span aria-hidden="true">@item.Icon</span>
+                            }
+                            else
+                            {
+                                @item.Label
+                            }
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (Model.NowOffset is { } now)
+        {
+            <div class="tl-now" style="--t:@N(now)" aria-hidden="true"></div>
+        }
+    </div>
+
+    @if (!Model.Items.Any())
+    {
+        <p class="tl-empty">Nothing logged yet. Use the buttons above.</p>
+    }
+</section>

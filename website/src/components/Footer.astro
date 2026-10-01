@@ -1,0 +1,31 @@
+---
+import Logo from './Logo.astro';
+import ContactLink from './ContactLink.astro';
+import { siteConfig } from '../site.config';
+---
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <a class="brand" href="/" aria-label="DayPrism home"><Logo size={28} /><span>DayPrism</span></a>
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="/privacy">Privacy</a></li>
+        <li><a href="/terms">Terms</a></li>
+        <li><a href="/delete-account">Delete account</a></li>
+        <li><ContactLink>Contact</ContactLink></li>
+      </ul>
+    </nav>
+    <p class="fine">© {siteConfig.copyrightYear} DayPrism · <span>Made with care for people everywhere.</span></p>
+    <noscript><p class="fine">To see our email address, please turn on JavaScript.</p></noscript>
+  </div>
+</footer>
+
+<style>
+  .footer { border-top: 1px solid var(--line); padding-block: 3rem 3.5rem; background: var(--sky); }
+  .footer-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2.5rem; }
+  .brand { display: inline-flex; align-items: center; gap: 0.55rem; min-height: 44px; color: var(--ink); text-decoration: none; font-weight: 800; letter-spacing: -0.02em; }
+  .brand :global(.logo) { border-radius: 7px; }
+  ul { display: flex; flex-wrap: wrap; gap: 0 0.25rem; list-style: none; }
+  a:not(.brand), ul :global(a) { display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.6rem; color: var(--ink-2); font-weight: 600; text-decoration: none; }
+  ul :global(a:hover) { color: var(--ink); text-decoration: underline; }
+  .fine { flex-basis: 100%; color: var(--ink-2); font-size: var(--small); }
+</style>

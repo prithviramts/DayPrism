@@ -1,0 +1,82 @@
+# Copy for the private investor page (/investors). Edit freely; state real numbers only.
+intro:
+  eyebrow: For investors
+  headline: DayPrism shows people the colours of their days.
+  sub: >-
+    A private, ad-free day tracker that explains why your days feel the way they do. Built to
+    work on the phones most of the world actually uses.
+
+opportunity:
+  headline: The opportunity
+  text: >-
+    People want to understand their energy, sleep and mood. The tools they have today are
+    fragmented (one app per habit), funded by advertising, or expensive. Nobody connects the
+    everyday inputs (sleep, food, caffeine, movement) to how a day actually felt, privately and
+    affordably.
+
+product:
+  headline: The product today
+  text: >-
+    DayPrism is a shipped Android app, version 1.6, currently in closed testing on Google Play.
+  shipped:
+    - Today screen with eight customisable tiles and one-tap logging
+    - Timeline of the day, streaks and a weekly summary
+    - Insights that link sleep, caffeine, meals and activity to energy and mood
+    - Home-screen widgets, including a streak widget
+    - Smart reminders that skip themselves when you've already logged
+    - Custom trackers and opt-in cycle tracking
+    - Health Connect import of steps, sleep and workouts
+    - Encrypted on-device database, offline-first sync, optional biometric app lock
+  traction: >-
+    No public launch yet, so no user numbers to report. We will share real figures as soon as
+    they exist.
+
+different:
+  headline: What makes it different
+  points:
+    - title: It connects everything.
+      text: Sleep, food, caffeine, activity, mood and energy live in one diary, so the app can relate them.
+    - title: It explains why.
+      text: Insights compare your own days, such as energy after short nights versus long ones.
+    - title: Private by architecture.
+      text: Encrypted on the phone, row-level security on the server, no ads and no tracking SDKs.
+    - title: Built for cheap phones and patchy data.
+      text: The free core works fully offline on Android 8.0 and newer.
+
+model:
+  headline: Business model
+  text: >-
+    Freemium. The core stays free forever. DayPrism Plus adds deeper insights and extras, with
+    regional pricing so it's affordable everywhere. No ads, ever. The goal is a sustainable
+    product with global reach, not maximum extraction per user.
+
+roadmap:
+  headline: Roadmap
+  phases:
+    - name: Phase 1
+      title: Android launch
+      text: Closed testing now, then public release on Google Play.
+    - name: Phase 2
+      title: iPhone and Apple Health
+      text: The same app on iOS, with Apple Health import.
+    - name: Phase 3
+      title: Forecasts and experiments
+      text: A personal energy forecast, self-experiments, and more languages.
+  note: Nutrition tracking (calories, protein, vitamins and minerals) is in beta.
+
+founder:
+  headline: The founder
+  # The longer founder story. Placeholder until the founder writes it; never invent facts.
+  story: >-
+    [Founder: add the longer version of your story here: where you started, why this problem
+    matters to you, and what you've built so far.]
+
+ask:
+  headline: The ask
+  text: >-
+    [Founder: describe what you're raising or looking for (amount, instrument, use of funds),
+    or what kind of partner you'd like to talk to.]
+
+contact:
+  headline: Let's talk
+  text: Questions, or want the full deck? Email the founder directly.

@@ -1,0 +1,16 @@
+---
+// The contact email, never written into the HTML as plain text. At build time each half of the
+// address is reversed and base64-encoded into data attributes; scripts/contact.ts rebuilds the
+// mailto: link in the browser. Simple scrapers that read raw HTML only see gibberish.
+import { siteConfig } from '../site.config';
+
+interface Props { showAddress?: boolean; class?: string }
+const { showAddress = false, class: className = '' } = Astro.props;
+const [user, domain] = siteConfig.contactEmail.split('@');
+const encode = (s: string) => Buffer.from([...s].reverse().join(''), 'utf8').toString('base64');
+---
+<a class:list={['contact-link', className]} href="#contact-needs-js" data-u={encode(user)} data-d={encode(domain)} data-show={showAddress ? '1' : undefined}><slot>Contact</slot></a>
+
+<script>
+  import '../scripts/contact';
+</script>

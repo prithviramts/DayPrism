@@ -1,0 +1,40 @@
+---
+// From the founder. Name and photo come from site.config.ts (placeholders until supplied);
+// the words come from src/content/home.yaml. Never invent biographical facts here.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { siteConfig } from '../site.config';
+
+interface Props { eyebrow: string; quote: string }
+const { eyebrow, quote } = Astro.props;
+const { name, role, photo } = siteConfig.founder;
+const images = import.meta.glob<{ default: ImageMetadata }>('../assets/*.{jpg,jpeg,png,webp}', { eager: true });
+const portrait = photo ? images[`../assets/${photo}`]?.default : undefined;
+// While the name is still a [placeholder], show a plain sun disc rather than a made-up initial.
+const initial = name.startsWith('[') ? '' : name.trim().charAt(0).toUpperCase();
+---
+<section id="founder" class="founder section" aria-labelledby="founder-title">
+  <div class="wrap founder-inner" data-reveal>
+    <h2 id="founder-title" class="eyebrow">{eyebrow}</h2>
+    <figure>
+      <blockquote><p>“{quote}”</p></blockquote>
+      <figcaption>
+        {portrait
+          ? <Image src={portrait} alt={`Portrait of ${name}`} width={112} height={112} class="avatar" />
+          : <span class="avatar avatar-initial" aria-hidden="true">{initial}</span>}
+        <span><b>{name}</b><br />{role}, DayPrism</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .founder-inner { max-width: 54rem; }
+  blockquote { margin: 0; }
+  blockquote p { font-size: clamp(1.35rem, 1.1rem + 1.2vw, 2.1rem); line-height: 1.4; font-weight: 600; letter-spacing: -0.02em; text-wrap: pretty; }
+  figure { margin: 0; }
+  figcaption { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; color: var(--ink-2); }
+  b { color: var(--ink); }
+  .avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
+  .avatar-initial { display: grid; place-items: center; font-weight: 800; font-size: 1.4rem; color: #fff; background: linear-gradient(135deg, var(--sun-deep), var(--brand-2)); }
+</style>

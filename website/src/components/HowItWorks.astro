@@ -1,0 +1,161 @@
+---
+// Log → See → Understand. Wide screens: the 3D phone stays pinned (position: sticky) while the
+// three steps scroll past and its screen changes. Phones and tablets: the same, stacked: a smaller
+// pinned phone with the step text underneath.
+import Phone from './Phone.astro';
+import ScreenSlot from './ScreenSlot.astro';
+import TodayScreen from './screens/TodayScreen.astro';
+import TimelineScreen from './screens/TimelineScreen.astro';
+import InsightsScreen from './screens/InsightsScreen.astro';
+
+interface Step { id: 'log' | 'see' | 'understand'; title: string; text: string }
+interface Props { eyebrow: string; headline: string; steps: Step[] }
+const { eyebrow, headline, steps } = Astro.props;
+
+const screens = {
+  log: { name: 'today', alt: 'The DayPrism Today screen: eight tiles for energy, sleep, water, meals, caffeine, activity, reflection and steps, with a 12-day streak.' },
+  see: { name: 'timeline', alt: "The day's timeline in DayPrism: sleep, water, coffee, breakfast, a check-in, deep work and lunch, with times, under a 12-day streak." },
+  understand: { name: 'insights', alt: 'DayPrism Insights: energy after short and long nights, how late caffeine affects sleep, and this week compared with last.' },
+} as const;
+---
+<section id="how" class="how section" aria-labelledby="how-title" data-how>
+  <div class="wrap">
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 id="how-title" class="h2">{headline}</h2>
+  </div>
+
+  <!-- Wide screens: sticky phone + scrolling steps -->
+  <div class="wrap how-wide">
+    <ol class="how-steps">
+      {steps.map((s, i) => (
+        <li class="how-step" data-step={s.id} data-active={i === 0 ? 'true' : undefined}>
+          <span class="how-num">0{i + 1}</span>
+          <h3>{s.title}</h3>
+          <p>{s.text}</p>
+        </li>
+      ))}
+    </ol>
+    <div class="how-stage">
+      <Phone class="how-phone">
+        {steps.map((s, i) => (
+          <div class="how-screen" data-screen={s.id} data-active={i === 0 ? 'true' : undefined}>
+            <ScreenSlot name={screens[s.id].name} alt={screens[s.id].alt}>
+              {s.id === 'log' && <TodayScreen />}
+              {s.id === 'see' && <TimelineScreen />}
+              {s.id === 'understand' && <InsightsScreen />}
+            </ScreenSlot>
+          </div>
+        ))}
+      </Phone>
+      <p class="how-caption">Sample data. Screens from DayPrism 1.6.</p>
+    </div>
+  </div>
+
+  <!-- Phones and tablets: the same idea as wide screens. One smaller phone stays pinned while
+       you scroll, and its screen and the step text below it change. Without JavaScript the
+       steps simply show one after another. -->
+  <div class="how-narrow" data-how-pin>
+    <div class="pin-track">
+      <div class="pin-sticky">
+        <Phone class="pin-phone">
+          {steps.map((s, i) => (
+            <div class="how-screen" data-screen={s.id} data-active={i === 0 ? 'true' : undefined}>
+              <ScreenSlot name={screens[s.id].name} alt={screens[s.id].alt}>
+                {s.id === 'log' && <TodayScreen />}
+                {s.id === 'see' && <TimelineScreen />}
+                {s.id === 'understand' && <InsightsScreen />}
+              </ScreenSlot>
+            </div>
+          ))}
+        </Phone>
+        <ol class="pin-steps">
+          {steps.map((s, i) => (
+            <li class="pin-step" data-step={s.id} data-active={i === 0 ? 'true' : undefined}>
+              <span class="how-num">0{i + 1} / 03</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))}
+        </ol>
+        <div class="pin-dots">
+          {steps.map((s, i) => (
+            <button type="button" class="pin-dot" data-goto={s.id} aria-label={`Step ${i + 1}: ${s.title}`} data-active={i === 0 ? 'true' : undefined}></button>
+          ))}
+        </div>
+      </div>
+      {steps.map((s, i) => <span class={`pin-marker m${i}`} data-pin-step={s.id} aria-hidden="true"></span>)}
+    </div>
+    <p class="how-caption wrap">Sample data. Screens from DayPrism 1.6.</p>
+  </div>
+</section>
+
+<script>
+  import '../scripts/how';
+</script>
+
+<style>
+  .how { padding-bottom: clamp(3rem, 8vw, 6rem); }
+  .how-num { display: block; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.12em; color: var(--sun-ink); margin-bottom: 0.75rem; font-variant-numeric: tabular-nums; }
+  :global([data-theme='dark']) .how-num { color: var(--window); }
+  h3 { font-size: clamp(1.6rem, 3vw, 2.5rem); letter-spacing: -0.03em; margin-bottom: 0.9rem; }
+  .how-step p { color: var(--ink-2); font-size: clamp(1.05rem, 1rem + 0.3vw, 1.2rem); max-width: 26rem; }
+  .how-caption { margin-top: 1rem; font-size: 0.8rem; color: var(--ink-2); text-align: center; }
+
+  /* ---- Wide ---- */
+  .how-wide { display: grid; grid-template-columns: 1fr minmax(260px, 340px); gap: clamp(2rem, 6vw, 6rem); }
+  .how-steps { list-style: none; }
+  .how-step {
+    min-height: 78vh;
+    display: grid;
+    align-content: center;
+    transition: color 0.5s var(--ease-light);
+  }
+  /* Steps not in view are dimmed with colour (still AA contrast), never made unreadable. */
+  .how-step:not([data-active]) h3, .how-step:not([data-active]) .how-num { color: var(--ink-2); }
+  .how-stage { position: sticky; top: calc(50vh - min(640px, 74vh) / 2); align-self: start; height: min(640px, 74vh); margin-top: 11vh; }
+  .how-stage :global(.phone) { height: 100%; }
+  .how-stage :global(.phone-body) { height: 100%; width: auto; }
+  .how-screen { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s var(--ease-light); }
+  .how-screen[data-active] { opacity: 1; }
+  .how-screen :global(.screen) { height: 100%; }
+
+  /* ---- Narrow ---- */
+  .how-narrow { display: none; }
+  @media (max-width: 959px) {
+    .how-wide { display: none; }
+    .how-narrow { display: block; margin-top: 1.5rem; }
+  }
+  /* Default (no JavaScript): phone, then the three steps one after another. */
+  .pin-sticky { display: grid; justify-items: center; gap: 1.5rem; padding-inline: var(--gutter); text-align: center; }
+  .pin-steps { list-style: none; display: grid; gap: 2rem; max-width: 30rem; }
+  .pin-step h3 { font-size: clamp(1.5rem, 5vw, 2rem); margin-bottom: 0.5rem; }
+  .pin-step p { color: var(--ink-2); font-size: 1.05rem; }
+  .pin-dots, .pin-marker { display: none; }
+  .pin-sticky :global(.pin-phone) { height: min(52svh, 460px); }
+  .pin-sticky :global(.pin-phone .phone-body) { height: 100%; width: auto; transition: transform 0.8s var(--ease-light); }
+  .pin-sticky .how-screen { position: absolute; inset: 0; }
+
+  /* Pinned mode (set by how.ts): the phone stays put while the page scrolls through the steps. */
+  :global(.how-pinned) .pin-track { position: relative; height: calc(100svh - var(--nav-h) + 2 * 70svh); }
+  :global(.how-pinned) .pin-sticky {
+    position: sticky;
+    top: var(--nav-h);
+    height: calc(100svh - var(--nav-h));
+    align-content: center;
+    gap: 1.1rem;
+  }
+  :global(.how-pinned) .pin-steps { display: grid; gap: 0; }
+  :global(.how-pinned) .pin-step { grid-area: 1 / 1; opacity: 0; transform: translateY(10px); transition: opacity 0.45s var(--ease-light), transform 0.45s var(--ease-light); }
+  :global(.how-pinned) .pin-step[data-active] { opacity: 1; transform: none; }
+  :global(.how-pinned) .pin-dots { display: flex; gap: 0.25rem; }
+  :global(.how-pinned) .pin-marker { display: block; position: absolute; left: 0; width: 1px; height: 70svh; }
+  .m0 { top: 0; } .m1 { top: 70svh; } .m2 { top: 140svh; height: calc(100svh - var(--nav-h)) !important; }
+  .pin-dot { width: 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+  .pin-dot::after { content: ''; width: 8px; height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 25%, transparent); transition: width 0.3s var(--ease-light), background-color 0.3s; }
+  .pin-dot[data-active]::after { width: 24px; background: var(--sun-ink); }
+  :global([data-theme='dark']) .pin-dot[data-active]::after { background: var(--window); }
+
+  /* The phone turns a little with each step, like on wide screens. */
+  [data-current='see'] :global(.pin-phone .phone-body) { transform: rotateY(-4deg) rotateX(5deg); }
+  [data-current='understand'] :global(.pin-phone .phone-body) { transform: rotateY(10deg) rotateX(4deg) rotateZ(-1deg); }
+</style>

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DayLog.Web/DayLog.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DayLog.Tests/DayLog.Tests.csproj" />
+  </Folder>
+</Solution>

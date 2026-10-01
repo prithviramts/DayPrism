@@ -1,0 +1,9 @@
+---
+import AppIcon from './AppIcon.astro';
+interface Props { active: 'today' | 'insights' }
+const { active } = Astro.props;
+const tabs = [['today', 'Today', 'sun'], ['history', 'History', 'cal'], ['insights', 'Insights', 'chart'], ['review', 'Review', 'book'], ['settings', 'Settings', 'gear']];
+---
+<div class="app-tabbar">
+  {tabs.map(([id, label, icon]) => <div class:list={['app-tab', { on: id === active }]}><AppIcon name={icon} />{label}</div>)}
+</div>

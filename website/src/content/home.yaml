@@ -1,0 +1,143 @@
+# Copy for the home page. Edit the words here; no code changes needed.
+# Rule: every claim must be true today. Anything not shipped goes under a "Coming soon" label.
+
+hero:
+  headline: See the colours of your day.
+  sub: Log your day in seconds. See what makes your best ones. Private by design.
+  secondary: See how it works
+
+meaning:
+  eyebrow: The name
+  headline: A prism splits plain light into its colours.
+  text: >-
+    DayPrism does the same with your day. It splits an ordinary day into what it's really made
+    of (sleep, food, mood, energy) and shows you the patterns.
+  # The colours that fan out of the prism, top to bottom.
+  colours: [Energy, Food, Mood, Sleep]
+
+problem:
+  headline: You can feel a bad day. You just can't see why.
+  truths:
+    - icon: battery
+      title: Tiredness has causes.
+      text: A late coffee, a short night, a skipped breakfast. The cause is usually hours or a day earlier.
+    - icon: weeks
+      title: Patterns hide across weeks.
+      text: One bad Tuesday tells you nothing. Twenty of them, side by side, tell you a lot.
+    - icon: shield
+      title: Most trackers are built for ads.
+      text: When the app is free because you're the product, your health data is the price.
+
+how:
+  eyebrow: How it works
+  headline: Log. See. Understand.
+  steps:
+    - id: log
+      title: Log in seconds.
+      text: >-
+        Eight tiles you choose. One tap adds a glass of water; long-press repeats your usual
+        meal or your last coffee.
+    - id: see
+      title: See your day.
+      text: A timeline of everything you logged, plus your streak, so the shape of the day is clear at a glance.
+    - id: understand
+      title: Understand your patterns.
+      text: >-
+        Insights such as how your sleep affects tomorrow's energy, or what your late coffee costs
+        you. A weekly summary compares this week with last.
+
+features:
+  eyebrow: What's inside
+  headline: Everything you need. Nothing that watches you.
+  shipped:
+    - icon: grid
+      title: Your own Today screen
+      text: Eight tiles you choose and arrange.
+    - icon: widget
+      title: Home-screen widgets
+      text: Log from your home screen. The streak widget glows when today is done.
+    - icon: flame
+      title: Streaks and weekly summary
+      text: Gentle motivation, and real progress you can compare week to week.
+    - icon: bell
+      title: Smart reminders
+      text: They skip themselves when you've already logged.
+    - icon: plus
+      title: Custom trackers
+      text: Medication, alcohol, stress, weight, anything you want to follow.
+    - icon: cycle
+      title: Cycle tracking
+      text: Periods, symptoms and predictions. Fully private and opt-in.
+    - icon: heart
+      title: Health Connect
+      text: Brings in steps, sleep and workouts from your watch or other apps.
+    - icon: cloud
+      title: Works offline, syncs when online
+      text: Your phone is the source of truth. Nothing waits for a connection.
+  soon:
+    - title: Nutrition
+      text: Calories, protein, vitamins and minerals from what you ate, including home-cooked dishes.
+    - title: iPhone app
+      text: DayPrism for iPhone, with Apple Health.
+    - title: DayPrism Plus
+      text: Deeper insights and extras, at a fair regional price.
+
+privacy:
+  eyebrow: Privacy
+  headline: Your days are yours.
+  points:
+    - title: Encrypted on your phone.
+      text: Your diary is stored with SQLCipher, 256-bit AES.
+    - title: No ads. No data selling. No third-party trackers.
+      text: Not now, not later. It isn't how DayPrism makes money.
+    - title: Even we can't read your entries.
+      text: >-
+        Our admin tools show basic account details, never what you logged, and the database itself
+        only lets your account read your entries.
+    - title: Optional app lock.
+      text: Fingerprint, face or your phone's PIN.
+    - title: Export or delete everything.
+      text: Any time, from Settings in the app.
+  link: Read our privacy policy
+
+compare:
+  eyebrow: Why DayPrism
+  headline: Built to explain, not just to count.
+  columns: [DayPrism, Typical habit trackers, Typical health apps]
+  note: Based on typical apps in each category. Individual apps differ.
+  rows:
+    - label: Connects sleep, food, caffeine and mood
+      cells: [{ v: yes, t: 'Yes, in one place' }, { v: no, t: 'Rarely: one habit at a time' }, { v: some, t: 'Partly, across separate screens' }]
+    - label: Shows why a day went the way it did
+      cells: [{ v: yes, t: 'Yes, from your own data' }, { v: no, t: 'Rarely: counts and charts' }, { v: some, t: 'Sometimes' }]
+    - label: No ads
+      cells: [{ v: yes, t: 'No ads, ever' }, { v: some, t: 'Varies' }, { v: some, t: 'Varies' }]
+    - label: Encrypted diary on your phone
+      cells: [{ v: yes, t: 'Yes, AES-256' }, { v: no, t: 'Rarely' }, { v: some, t: 'Varies' }]
+    - label: Works offline
+      cells: [{ v: yes, t: 'Yes, fully' }, { v: some, t: 'Often' }, { v: some, t: 'Varies' }]
+    - label: Free core features
+      cells: [{ v: yes, t: 'Yes, forever' }, { v: some, t: 'Often limited' }, { v: some, t: 'Often a subscription' }]
+
+pricing:
+  eyebrow: Pricing
+  headline: Free where it matters.
+  free:
+    name: Free, forever
+    text: Everything you need to log and understand your days.
+    items: [All logging, Home-screen widgets, Smart reminders, Streaks and weekly summary, Backup and sync to your account, Core insights]
+  plus:
+    name: DayPrism Plus
+    text: Deeper insights and extras, at an affordable price for your region.
+  line: No ads, ever. If you can't afford Plus, DayPrism still works fully.
+
+founder:
+  eyebrow: From the founder
+  quote: >-
+    I didn't start with a big office or a big budget. I come from the ground up, from long days,
+    little sleep and figuring things out on my own. I built DayPrism for people like the ones I grew
+    up with: people who can't pay for coaches or premium apps but deserve to understand their own
+    days just as much. That's why the core of DayPrism is free, has no ads and keeps your data yours.
+
+final:
+  headline: Start seeing your days clearly.

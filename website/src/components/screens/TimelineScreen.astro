@@ -1,0 +1,38 @@
+---
+import './screens.css';
+import AppIcon from './AppIcon.astro';
+import TabBar from './TabBar.astro';
+// The day's timeline and streak, as in DayPrism 1.6, with sample values.
+const items = [
+  ['07:05', 'sleep', 'moon', 'Sleep', '7h 20m, quality 4/5'],
+  ['07:30', 'water', 'drop', 'Water', '1 glass'],
+  ['07:45', 'caffeine', 'cup', 'Caffeine', 'Coffee, 80 mg'],
+  ['08:10', 'meal', 'meal', 'Breakfast', 'Oats and fruit'],
+  ['09:40', 'checkin', 'bolt', 'Check-in', 'Energy 4/5, mood 4/5'],
+  ['10:00', 'activity', 'work', 'Deep work', '1h 30m'],
+  ['13:05', 'meal', 'meal', 'Lunch', 'Rice and dal'],
+  ['15:20', 'checkin', 'bolt', 'Check-in', 'Energy 3/5, mood 4/5'],
+];
+---
+<div class="app">
+  <div class="app-status"><span>3:41</span><span><i></i><i></i></span></div>
+  <div class="app-head">
+    <div><p class="app-date">Friday 2 October</p><p class="app-title">Your day</p></div>
+    <span class="app-streak"><AppIcon name="flame" />12</span>
+  </div>
+  <div class="app-card c-meal">
+    <div class="app-card-h"><AppIcon name="flame" />12-day streak</div>
+    <p class="app-take">Today is logged.</p>
+  </div>
+  <div class="app-sect"><b>Timeline</b><span>tap to edit</span></div>
+  <div class="app-card app-timeline">
+    {items.map(([time, c, icon, title, detail]) => (
+      <div class:list={['app-item', `c-${c}`]}>
+        <span class="app-time">{time}</span>
+        <span class="app-ico"><AppIcon name={icon} /></span>
+        <div><b>{title}</b><span>{detail}</span></div>
+      </div>
+    ))}
+  </div>
+  <TabBar active="today" />
+</div>

@@ -1,0 +1,121 @@
+---
+// What the name means: a prism splits plain light into its colours; DayPrism splits an ordinary
+// day into what it's made of. As you scroll, the sunrise's light slants in from above, passes
+// through the prism and fans out into coloured rays, each named after part of your day
+// (motion.ts). Without motion (or JavaScript) the finished picture is shown.
+interface Props { eyebrow: string; headline: string; text: string; colours: string[] }
+const { eyebrow, headline, text, colours } = Astro.props;
+
+// Scene geometry, in a 1000 × 440 box. The prism is an equilateral triangle, left of centre so
+// the rays and their labels fit even on a 360 px phone.
+const apex = [400, 130];
+const left = [295, 312];
+const right = [505, 312];
+const entry = [352, 221]; // where the beam meets the left face
+const exit = [453, 226]; // where the colours leave the right face
+const beamStart = [-40, -30]; // off the top-left edge: the light comes down from the hero's sun
+const beamAngle = (Math.atan2(entry[1] - beamStart[1], entry[0] - beamStart[0]) * 180) / Math.PI;
+const beamLength = Math.hypot(entry[0] - beamStart[0], entry[1] - beamStart[1]);
+
+// Rays fan out from the exit point; angles in degrees (0 = straight right, positive = down).
+const tones = ['#ffd166', '#ff9a3c', '#ff6b8b', '#7c6cf0', '#5598e7'];
+const n = colours.length;
+const rays = colours.map((label, i) => {
+  const angle = -16 + (i * 44) / Math.max(1, n - 1);
+  const length = 300 - Math.abs(i - (n - 1) / 2) * 16;
+  const rad = (angle * Math.PI) / 180;
+  return {
+    label,
+    tone: tones[i % tones.length],
+    angle,
+    length,
+    // The label sits just past the end of its ray.
+    lx: exit[0] + Math.cos(rad) * length + 30,
+    ly: exit[1] + Math.sin(rad) * length + 13,
+  };
+});
+const pts = (p: number[][]) => p.map((q) => q.join(',')).join(' ');
+---
+<section class="prism-sec section" aria-labelledby="prism-title" data-prism>
+  <div class="wrap prism-inner">
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 id="prism-title" class="h2 prism-title">{headline}</h2>
+    <p class="lead">{text}</p>
+  </div>
+
+  <figure class="prism-fig">
+    <svg viewBox="0 0 1000 440" role="img" aria-labelledby="prism-desc" class="prism-svg">
+      <title id="prism-desc">A beam of sunlight passes through a glass prism and fans out into coloured rays labelled {colours.join(', ')}.</title>
+      <defs>
+        <linearGradient id="beam-grad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" class="beam-stop-a" />
+          <stop offset="1" class="beam-stop-b" />
+        </linearGradient>
+        <linearGradient id="glass-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff" stop-opacity="0.55" />
+          <stop offset="1" stop-color="#ffffff" stop-opacity="0.12" />
+        </linearGradient>
+        {rays.map((r, i) => (
+          <linearGradient id={`ray-${i}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color={r.tone} stop-opacity="1" />
+            <stop offset="1" stop-color={r.tone} stop-opacity="0.15" />
+          </linearGradient>
+        ))}
+      </defs>
+
+      <!-- The light coming in. Drawn horizontally, then turned to slant down into the prism. -->
+      <g transform={`translate(${beamStart[0]} ${beamStart[1]}) rotate(${beamAngle.toFixed(2)})`}>
+        <g data-beam>
+          <polygon class="beam" points={pts([[0, -16], [beamLength, -6], [beamLength, 6], [0, 16]])} />
+        </g>
+      </g>
+
+      <!-- The colours going out, one ray per part of the day. -->
+      <g class="rays">
+        {rays.map((r, i) => (
+          <g transform={`translate(${exit[0]} ${exit[1]})`}>
+            <g data-ray data-angle={r.angle.toFixed(2)} transform={`rotate(${r.angle.toFixed(2)})`}>
+              <polygon points={pts([[0, -4], [r.length, -16], [r.length, 16], [0, 4]])} fill={`url(#ray-${i})`} />
+            </g>
+          </g>
+        ))}
+      </g>
+
+      <!-- The prism itself. -->
+      <polygon class="glass" data-glass points={pts([apex, left, right])} />
+      <polygon class="edge" points={pts([apex, left, right])} />
+
+      <!-- Labels at the end of each ray. -->
+      {rays.map((r) => (
+        <g data-ray-label>
+          <circle cx={r.lx - 16} cy={r.ly - 12} r="8" fill={r.tone} />
+          <text x={r.lx} y={r.ly} class="ray-label">{r.label}</text>
+        </g>
+      ))}
+    </svg>
+  </figure>
+</section>
+
+<style>
+  .prism-sec { overflow: clip; padding-top: clamp(3rem, 8vw, 6rem); }
+  .prism-inner { display: grid; justify-items: center; text-align: center; }
+  .prism-title { max-width: 20ch; }
+  .lead { margin-top: 1.25rem; }
+  .prism-fig { margin: clamp(1.5rem, 4vw, 3rem) auto 0; max-width: 1100px; padding-inline: clamp(0px, 2vw, 1rem); }
+  .prism-svg { width: 100%; height: auto; overflow: visible; }
+
+  .beam { fill: url(#beam-grad); }
+  /* Warm sunlight in the light theme, cool moonlight in the dark one. */
+  .beam-stop-a { stop-color: #ffb45c; stop-opacity: 0.12; }
+  .beam-stop-b { stop-color: #ffb45c; stop-opacity: 0.9; }
+  :global([data-theme='dark']) .beam-stop-a { stop-color: var(--moon); stop-opacity: 0.1; }
+  :global([data-theme='dark']) .beam-stop-b { stop-color: var(--moon); stop-opacity: 0.9; }
+
+  .glass { fill: #2a78d6; fill-opacity: 0.12; }
+  :global([data-theme='dark']) .glass { fill: url(#glass-grad); fill-opacity: 1; }
+  .edge { fill: none; stroke: var(--ink); stroke-opacity: 0.85; stroke-width: 9; stroke-linejoin: round; }
+  :global([data-theme='dark']) .edge { stroke: #ffffff; }
+
+  .ray-label { font-family: var(--font); font-weight: 800; font-size: 34px; letter-spacing: -0.01em; fill: var(--ink); }
+  @media (max-width: 640px) { .ray-label { font-size: 46px; } }
+</style>

@@ -1,0 +1,114 @@
+---
+// Shipped features only. Unreleased work sits in its own "Coming soon" row. As you scroll, a
+// soft sun passes over the grid and each card lights up as it goes by (motion.ts).
+import { Picture } from 'astro:assets';
+import Icon from './Icon.astro';
+import widget from '../assets/app/widget-preview.png';
+import streakWidget from '../assets/app/streak-widget-preview.png';
+
+interface Item { icon?: string; title: string; text: string }
+interface Props { eyebrow: string; headline: string; shipped: Item[]; soon: Item[] }
+const { eyebrow, headline, shipped, soon } = Astro.props;
+---
+<section id="features" class="features section" aria-labelledby="features-title" data-features>
+  <div class="sunpass" aria-hidden="true" data-sunpass></div>
+  <div class="wrap">
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 id="features-title" class="h2">{headline}</h2>
+
+    <ul class="grid" role="list">
+      {shipped.map((f) => (
+        <li class="card feature" data-feature>
+          <span class="feature-light" aria-hidden="true"></span>
+          <span class="feature-icon"><Icon name={f.icon!} size={22} /></span>
+          <h3>{f.title}</h3>
+          <p>{f.text}</p>
+        </li>
+      ))}
+    </ul>
+
+    <figure class="widgets">
+      <div class="widget-pics">
+        <Picture src={widget} formats={['avif', 'webp']} widths={[320, 640]} sizes="(min-width: 800px) 420px, 90vw" alt="The DayPrism home-screen widget showing sleep 7h 20m, water 5 of 8 glasses, caffeine 160 mg and energy 4 of 5." class="widget-wide" />
+        <Picture src={streakWidget} formats={['avif', 'webp']} widths={[160, 320]} sizes="(min-width: 800px) 200px, 40vw" alt="The DayPrism streak widget: a 12-day streak, done for today." class="widget-square" />
+      </div>
+      <figcaption>The home-screen widgets, as they appear in the Android widget picker.</figcaption>
+    </figure>
+
+    <div class="soon">
+      <h3 class="soon-title"><span class="pill">Coming soon</span><span class="visually-hidden">: features we're still building</span></h3>
+      <ul class="soon-list" role="list">
+        {soon.map((f) => (
+          <li class="soon-item">
+            <h4>{f.title}</h4>
+            <p>{f.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .features { overflow: clip; }
+  .sunpass {
+    position: absolute;
+    top: 30%;
+    left: 0;
+    width: 70vmax;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--glow), transparent);
+    pointer-events: none;
+    opacity: 0;
+  }
+  .grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));
+    gap: 1rem;
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+  }
+  .feature { padding: 1.5rem 1.4rem 1.6rem; overflow: hidden; }
+  .feature-light {
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(120% 80% at 50% -10%, color-mix(in srgb, var(--sun) 20%, transparent), transparent 60%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--sun) 40%, transparent);
+    opacity: 0;
+  }
+  :global([data-theme='dark']) .feature-light {
+    background: radial-gradient(120% 80% at 50% -10%, color-mix(in srgb, var(--moon) 14%, transparent), transparent 60%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--moon) 30%, transparent);
+  }
+  /* Without scroll motion, the cards are simply lit. */
+  :global(html:not(.motion)) .feature-light { opacity: 0.55; }
+  .feature-icon {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 12px;
+    margin-bottom: 1.1rem;
+    color: var(--brand-ink);
+    background: color-mix(in srgb, var(--brand) 11%, transparent);
+  }
+  .feature h3 { position: relative; font-size: 1.12rem; letter-spacing: -0.015em; margin-bottom: 0.4rem; }
+  .feature p { position: relative; color: var(--ink-2); font-size: 0.98rem; }
+
+  .widgets { margin: clamp(3rem, 6vw, 5rem) 0 0; display: grid; justify-items: center; gap: 1rem; }
+  .widget-pics { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1.25rem; }
+  .widgets :global(.widget-wide) { width: min(420px, 90vw); height: auto; border-radius: 24px; box-shadow: var(--shadow-lg); }
+  .widgets :global(.widget-square) { width: min(200px, 42vw); height: auto; border-radius: 24px; box-shadow: var(--shadow-lg); }
+  figcaption { font-size: 0.85rem; color: var(--ink-2); text-align: center; }
+
+  .soon { margin-top: clamp(3rem, 6vw, 5rem); padding-top: 2rem; border-top: 1px dashed var(--line); }
+  .soon-title { margin-bottom: 1.25rem; }
+  .soon-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 1rem 2rem; }
+  .soon-item h4 { font-size: 1.05rem; letter-spacing: -0.01em; margin-bottom: 0.3rem; }
+  .soon-item p { color: var(--ink-2); font-size: 0.95rem; }
+</style>

@@ -1,0 +1,82 @@
+/* The app's screens rebuilt in HTML, in the app's own colours (dayprism-v1/src/ui/theme.ts).
+   Everything is sized in em from the phone width (container query units), so the screen scales
+   with the phone. Always light: these are pictures of the app, not part of the page theme. */
+.app {
+  --bg: #f4f6fa; --surface: #fff; --text: #0f172a; --text2: #475569; --muted: #8a94a6;
+  --border: rgba(15, 23, 42, 0.08); --accent: #2a78d6;
+  --t-checkin: #2a78d6; --t-sleep: #5b4bc4; --t-water: #0f97b8; --t-meal: #e2622d;
+  --t-caffeine: #a86a12; --t-activity: #2a78d6; --t-reflect: #c9416f; --t-steps: #1baf7a;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0.9em 1em 0;
+  font-size: 4.15cqw;
+  line-height: 1.25;
+  color: var(--text);
+  background: var(--bg);
+  font-family: var(--font);
+  text-align: left;
+  letter-spacing: 0;
+}
+.app * { margin: 0; }
+.app-status { display: flex; justify-content: space-between; font-size: 0.78em; font-weight: 600; color: var(--text2); padding: 0 0.3em 0.9em; }
+.app-status i { display: inline-block; width: 1.1em; height: 0.75em; margin-left: 0.3em; border-radius: 2px; background: var(--text2); opacity: 0.8; }
+.app-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1em; }
+.app-date { font-size: 0.72em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); font-weight: 600; }
+.app-title { font-size: 1.75em; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+.app-streak { display: inline-flex; align-items: center; gap: 0.25em; padding: 0.35em 0.7em; border-radius: 999px; background: #fde4d4; color: #e2622d; font-weight: 800; font-size: 0.95em; }
+.app-streak svg { width: 1em; height: 1em; }
+.app-sect { display: flex; align-items: baseline; gap: 0.5em; margin: 0.2em 0 0.6em; }
+.app-sect b { font-size: 1.08em; font-weight: 800; letter-spacing: -0.01em; }
+.app-sect span { font-size: 0.74em; color: var(--muted); }
+.app-sect .app-link { margin-left: auto; color: var(--accent); font-weight: 700; font-size: 0.8em; }
+
+.app-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6em; }
+.app-tile { position: relative; padding: 0.7em 0.75em; border-radius: 1em; background: var(--surface); border: 1px solid var(--border); min-height: 6.5em; }
+.app-tile.done { border-color: color-mix(in srgb, var(--c) 45%, transparent); }
+.app-ico { display: grid; place-items: center; width: 2em; height: 2em; border-radius: 0.6em; background: color-mix(in srgb, var(--c) 13%, transparent); color: var(--c); margin-bottom: 0.45em; }
+.app-ico svg { width: 1.1em; height: 1.1em; }
+.app-ring { border-radius: 50%; background: conic-gradient(var(--c) calc(var(--p) * 1%), color-mix(in srgb, var(--c) 15%, transparent) 0); }
+.app-ring > span { display: grid; place-items: center; width: 74%; height: 74%; border-radius: 50%; background: var(--surface); }
+.app-check { position: absolute; top: 0.6em; right: 0.6em; width: 1.25em; height: 1.25em; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; }
+.app-check svg { width: 0.8em; height: 0.8em; }
+.app-label { font-size: 0.76em; color: var(--text2); }
+.app-value { font-size: 1.25em; font-weight: 800; letter-spacing: -0.02em; }
+.app-sub { font-size: 0.7em; color: var(--text2); }
+
+.app-tabbar { margin: auto -1em 0; display: grid; grid-template-columns: repeat(5, 1fr); padding: 0.6em 0.4em 1.1em; background: var(--surface); border-top: 1px solid var(--border); }
+.app-tab { display: grid; justify-items: center; gap: 0.15em; font-size: 0.62em; color: var(--muted); font-weight: 600; }
+.app-tab svg { width: 1.9em; height: 1.9em; }
+.app-tab.on { color: var(--accent); }
+
+.app-card { padding: 0.85em 0.9em; border-radius: 1em; background: var(--surface); border: 1px solid var(--border); margin-bottom: 0.6em; }
+.app-card-h { display: flex; align-items: center; gap: 0.45em; font-weight: 800; font-size: 0.92em; margin-bottom: 0.55em; }
+.app-card-h svg { width: 1.1em; height: 1.1em; color: var(--c, var(--accent)); }
+.app-take { font-size: 0.74em; color: var(--text2); line-height: 1.4; }
+
+.app-timeline { display: grid; gap: 0; }
+.app-item { display: grid; grid-template-columns: 3.2em 1.9em 1fr; align-items: center; gap: 0.4em; padding: 0.42em 0; border-bottom: 1px solid var(--border); }
+.app-item:last-child { border-bottom: 0; }
+.app-time { font-size: 0.72em; color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 600; }
+.app-item .app-ico { width: 1.75em; height: 1.75em; margin: 0; border-radius: 0.55em; }
+.app-item b { display: block; font-size: 0.82em; font-weight: 700; }
+.app-item span { font-size: 0.7em; color: var(--text2); }
+
+.app-bars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6em; align-items: end; height: 5.4em; margin: 0.3em 0 0.4em; }
+.app-bar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 0.2em; height: 100%; }
+.app-bar i { display: block; width: 62%; border-radius: 0.35em 0.35em 0.15em 0.15em; background: var(--accent); height: calc(var(--h) * 0.045em); }
+.app-bar:first-child i { background: #86b6ef; }
+.app-bar b { font-size: 0.7em; font-weight: 800; }
+.app-bar span { font-size: 0.6em; color: var(--muted); white-space: nowrap; }
+.app-week { display: grid; gap: 0.35em; }
+.app-week div { display: flex; justify-content: space-between; font-size: 0.74em; }
+.app-week b { font-weight: 800; }
+.app-up { color: #1b8f64; font-weight: 700; }
+
+/* Per-element values as classes (the Content-Security-Policy forbids style="" attributes). */
+.c-checkin { --c: var(--t-checkin); } .c-sleep { --c: var(--t-sleep); } .c-water { --c: var(--t-water); }
+.c-meal { --c: var(--t-meal); } .c-caffeine { --c: var(--t-caffeine); } .c-activity { --c: var(--t-activity); }
+.c-reflect { --c: var(--t-reflect); } .c-steps { --c: var(--t-steps); }
+.p20 { --p: 20; } .p33 { --p: 33; } .p53 { --p: 53; } .p62 { --p: 62; } .p80 { --p: 80; }
+.h52 { --h: 52; } .h66 { --h: 66; } .h78 { --h: 78; }

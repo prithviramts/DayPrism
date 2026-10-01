@@ -1,0 +1,35 @@
+---
+import './screens.css';
+import AppIcon from './AppIcon.astro';
+import TabBar from './TabBar.astro';
+// Insights and the weekly summary, as in DayPrism 1.6. The sentences follow the app's own
+// templates (dayprism-v1/src/services/insights.ts and week.ts), with sample values.
+---
+<div class="app">
+  <div class="app-status"><span>9:12</span><span><i></i><i></i></span></div>
+  <div class="app-head">
+    <div><p class="app-date">5 Sep – 2 Oct</p><p class="app-title">Insights</p></div>
+  </div>
+  <div class="app-card c-sleep">
+    <div class="app-card-h"><AppIcon name="moon" />Sleep vs that day's energy</div>
+    <div class="app-bars">
+      <div class="app-bar h52"><b>2.6</b><i></i><span>Under 6h</span></div>
+      <div class="app-bar h66"><b>3.3</b><i></i><span>6–7h</span></div>
+      <div class="app-bar h78"><b>3.9</b><i></i><span>7h+</span></div>
+    </div>
+    <p class="app-take">After nights under 6h your energy averaged 2.6, vs 3.9 after 7h+ (−1.3 points).</p>
+  </div>
+  <div class="app-card c-caffeine">
+    <div class="app-card-h"><AppIcon name="cup" />Caffeine timing vs that night</div>
+    <p class="app-take">When your last caffeine was after 16:00 you slept 6h 10m (quality 2.9), vs 7h 25m (quality 3.9) when it was before 14:00.</p>
+  </div>
+  <div class="app-card">
+    <div class="app-card-h"><AppIcon name="cal" />This week vs last</div>
+    <div class="app-week">
+      <div><span>Average sleep</span><b>7h 05m <span class="app-up">+25m</span></b></div>
+      <div><span>Average energy</span><b>3.6 / 5 <span class="app-up">+0.3</span></b></div>
+      <div><span>Caffeine a day</span><b>140 mg <span class="app-up">−30 mg</span></b></div>
+    </div>
+  </div>
+  <TabBar active="insights" />
+</div>

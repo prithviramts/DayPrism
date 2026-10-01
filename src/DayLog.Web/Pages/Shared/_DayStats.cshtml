@@ -1,0 +1,72 @@
+@using System.Globalization
+@using DayLog.Web.Domain
+@using DayLog.Web.Services
+@model DaySnapshot
+@inject SettingsStore Settings
+@{
+    // The four totals tiles, shared by Today and History. Each ring fills towards a daily target
+    // (set on the Settings page); caffeine is a limit, so its ring turns red past it.
+    var s0 = Settings.Current;
+    var t = new { SleepHours = s0.SleepTargetHours, WaterGlasses = s0.WaterTargetGlasses, Meals = s0.MealsTarget, CaffeineMgLimit = s0.CaffeineLimitMg };
+
+    void Ring(double progress, string tint, string icon, bool over = false)
+    {
+        var pct = Math.Clamp(progress, 0, 1) * 100;
+        <span class="ring @(over ? "over" : "")" style="--c: var(--tint-@tint)">
+            <svg class="ring-svg" viewBox="0 0 46 46" aria-hidden="true">
+                <circle class="ring-track" cx="23" cy="23" r="19" />
+                @if (pct > 0)
+                {
+                    <circle class="ring-fill" cx="23" cy="23" r="19" pathLength="100"
+                            stroke-dasharray="@pct.ToString("0.#", CultureInfo.InvariantCulture) 100" />
+                }
+            </svg>
+            <svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-@icon" /></svg>
+        </span>
+    }
+
+    var sleepHours = Model.Sleep?.Duration.TotalHours ?? 0;
+}
+
+<section class="stats" aria-label="Totals for the day">
+    <div class="stat">
+        @{ Ring(sleepHours / t.SleepHours, "sleep", "moon"); }
+        <div class="stat-text">
+            <div class="stat-label">Sleep <span class="muted">· @(t.SleepHours)h goal</span></div>
+            @if (Model.Sleep is { } s)
+            {
+                <div class="stat-value">@DisplayNames.Duration(s.Duration)</div>
+                <div class="stat-sub">quality @s.Quality/5</div>
+            }
+            else
+            {
+                <div class="stat-value muted">–</div>
+                <div class="stat-sub">not logged</div>
+            }
+        </div>
+    </div>
+    <div class="stat">
+        @{ Ring(Model.CaffeineMg / (double)t.CaffeineMgLimit, "caffeine", "coffee", over: Model.CaffeineMg > t.CaffeineMgLimit); }
+        <div class="stat-text">
+            <div class="stat-label">Caffeine</div>
+            <div class="stat-value">@Model.CaffeineMg <small class="muted">mg</small></div>
+            <div class="stat-sub">of @t.CaffeineMgLimit mg max</div>
+        </div>
+    </div>
+    <div class="stat">
+        @{ Ring(Model.MealsEaten / (double)t.Meals, "meal", "tools-kitchen-2"); }
+        <div class="stat-text">
+            <div class="stat-label">Meals</div>
+            <div class="stat-value">@Model.MealsEaten <small class="muted">of @t.Meals</small></div>
+            <div class="stat-sub">@(Model.MealsSkipped > 0 ? $"{Model.MealsSkipped} skipped" : "eaten")</div>
+        </div>
+    </div>
+    <div class="stat">
+        @{ Ring(Model.WaterGlasses / (double)t.WaterGlasses, "water", "droplet"); }
+        <div class="stat-text">
+            <div class="stat-label">Water</div>
+            <div class="stat-value">@Model.WaterGlasses <small class="muted">of @t.WaterGlasses</small></div>
+            <div class="stat-sub">glasses</div>
+        </div>
+    </div>
+</section>

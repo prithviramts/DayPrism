@@ -1,0 +1,151 @@
+---
+// The trust section, always in moonlight. The vault lists everything DayPrism stores on the phone;
+// as you scroll, each value scrambles into ciphertext and the lock closes (motion.ts): encryption
+// shown, not just stated. Every label stays visible, so people can see exactly what's protected.
+// The "ciphertext" is decoration made at build time, not real data or keys.
+import Icon from './Icon.astro';
+import Town from './Town.astro';
+
+interface Props { eyebrow: string; headline: string; points: { title: string; text: string }[]; link: string }
+const { eyebrow, headline, points, link } = Astro.props;
+// Everything in the app's encrypted database (dayprism-v1/src/db), with a sample value each.
+const rows = [
+  ['Sleep', '7h 20m, quality 4/5'],
+  ['Meals', 'Oats and fruit, 08:10'],
+  ['Caffeine', 'Coffee, 80 mg'],
+  ['Water', '5 of 8 glasses'],
+  ['Energy and mood', '4/5 and 4/5'],
+  ['Activities', 'Deep work, 1h 30m'],
+  ['Reflections', '"A good, calm day."'],
+  ['Custom trackers', 'Medication: taken'],
+  ['Cycle tracking', 'Day 12'],
+  ['Steps and workouts', '6,240 steps'],
+  ['Your settings', 'Reminders at 21:00'],
+];
+// Fake ciphertext: stable hex derived from the label, so the page is the same on every build.
+const cipher = (text: string) => {
+  let h = 2166136261;
+  let out = '';
+  for (let i = 0; out.length < 19; i++) {
+    h = Math.imul(h ^ text.charCodeAt(i % text.length) ^ i, 16777619) >>> 0;
+    out += (h % 65536).toString(16).padStart(4, '0') + ' ';
+  }
+  return out.slice(0, 19);
+};
+const icons = ['lock', 'ad', 'eye', 'finger', 'download'];
+---
+<section id="privacy" class="privacy section" data-theme="dark" aria-labelledby="privacy-title" data-privacy>
+  <div class="night" aria-hidden="true"></div>
+  <Town class="privacy-town" />
+  <div class="wrap privacy-grid">
+    <div>
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 id="privacy-title" class="h2">{headline}</h2>
+      <ul class="points" role="list">
+        {points.map((p, i) => (
+          <li data-reveal>
+            <span class="point-icon"><Icon name={icons[i] ?? 'shield'} size={20} /></span>
+            <div><h3>{p.title}</h3><p>{p.text}</p></div>
+          </li>
+        ))}
+      </ul>
+      <a class="policy" href="/privacy">{link} <Icon name="arrow-right" size={18} /></a>
+    </div>
+
+    <figure class="vault" data-vault>
+      <span class="vault-glow" aria-hidden="true" data-vault-glow></span>
+      <div class="vault-head">
+        <svg class="vault-lock" viewBox="0 0 64 64" width="44" height="44" aria-hidden="true" focusable="false">
+          <path data-shackle d="M20 30V21a12 12 0 0 1 24 0v9" />
+          <rect x="13" y="29" width="38" height="28" rx="7" />
+          <circle cx="32" cy="41" r="3.5" />
+          <path d="M32 44v5" />
+        </svg>
+        <div>
+          <p class="vault-title">Encrypted on your phone</p>
+          <p class="vault-sub">SQLCipher · AES-256 · key kept in the Android Keystore</p>
+        </div>
+      </div>
+      <ul class="vault-rows" role="list" aria-label="What DayPrism encrypts on your phone">
+        {rows.map(([label, value]) => (
+          <li class="vault-row" data-vault-row>
+            <span class="row-label">{label}<span class="visually-hidden">: encrypted</span></span>
+            <span class="row-value" aria-hidden="true">
+              <span class="plain" data-plain>{value}</span>
+              <span class="cipher" data-cipher>{cipher(label)}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <figcaption>
+        Everything you log lives in one encrypted database on your phone. Without your phone's key it
+        reads like the scrambled text above. Saying how we encrypt doesn't weaken it: good
+        encryption depends on keeping the key secret, not the method.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .privacy { --town-h: clamp(150px, 24vw, 300px); color: var(--ink); background: var(--sky); overflow: clip; padding-bottom: calc(var(--town-h) + 2.5rem); }
+  .night {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 40% at 80% 10%, rgba(223, 231, 255, 0.10), transparent 70%),
+      linear-gradient(180deg, #070b18 0%, #0b1020 60%, #141a33 100%);
+  }
+  .privacy :global(.privacy-town) { position: absolute; left: 0; bottom: 0; width: 100%; height: var(--town-h); }
+  .privacy :global(.town-l0) { fill: #1a2242; }
+  .privacy :global(.town-l1) { fill: #131a35; }
+  .privacy :global(.town-l2) { fill: #0d1329; }
+  .privacy :global(.wb) { fill: var(--window); }
+  .privacy-grid { position: relative; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(2.5rem, 6vw, 6rem); align-items: center; }
+  @media (max-width: 880px) { .privacy-grid { grid-template-columns: 1fr; } }
+
+  .points { list-style: none; display: grid; gap: 1.4rem; margin-top: 2.5rem; }
+  .points li { display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: start; }
+  .point-icon { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 11px; color: var(--moon); background: rgba(223, 231, 255, 0.08); border: 1px solid rgba(223, 231, 255, 0.12); }
+  .points h3 { font-size: 1.08rem; letter-spacing: -0.01em; margin-bottom: 0.2rem; }
+  .points p { color: var(--ink-2); font-size: 0.98rem; }
+  .policy { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 44px; margin-top: 2rem; font-weight: 700; color: var(--moon); text-decoration: none; }
+  .policy:hover { text-decoration: underline; }
+
+  .vault {
+    position: relative;
+    isolation: isolate;
+    margin: 0;
+    padding: clamp(1.2rem, 3vw, 1.75rem);
+    border-radius: 28px;
+    background: linear-gradient(160deg, rgba(30, 40, 70, 0.92), rgba(15, 21, 38, 0.95));
+    border: 1px solid rgba(223, 231, 255, 0.16);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  .vault-glow { position: absolute; inset: -12%; z-index: -1; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 210, 122, 0.18), transparent); opacity: 0.8; pointer-events: none; }
+  .vault-head { display: flex; align-items: center; gap: 0.9rem; padding-bottom: 1rem; margin-bottom: 0.4rem; border-bottom: 1px solid rgba(223, 231, 255, 0.12); }
+  .vault-lock { flex: none; fill: none; stroke: var(--window); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+  .vault-lock rect { fill: rgba(255, 210, 122, 0.12); }
+  .vault-title { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.01em; }
+  .vault-sub { font-size: 0.85rem; color: var(--ink-2); }
+  .vault-rows { list-style: none; display: grid; }
+  .vault-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.62rem 0.15rem;
+    border-bottom: 1px dashed rgba(223, 231, 255, 0.1);
+    font-size: 0.95rem;
+  }
+  .vault-row:last-child { border-bottom: 0; }
+  .row-label { font-weight: 600; }
+  .row-value { display: grid; justify-items: end; text-align: right; }
+  .plain, .cipher { grid-area: 1 / 1; white-space: nowrap; }
+  .plain { color: var(--ink-2); opacity: 0; }
+  .cipher { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 0.82rem; letter-spacing: 0.04em; color: var(--window); }
+  .vault figcaption { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(223, 231, 255, 0.12); color: var(--ink-2); font-size: 0.9rem; }
+  @media (max-width: 420px) {
+    .vault-row { grid-template-columns: 1fr; gap: 0.15rem; }
+    .row-value { justify-items: start; text-align: left; }
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { siteConfig } from '../site.config';
+
+interface Props {
+  title: string;
+  description: string;
+  /** 'home' turns on the sunrise entrance. */
+  page?: 'home' | 'legal' | 'investors' | 'error';
+  noindex?: boolean;
+  jsonLd?: object;
+}
+const { title, description, page = 'legal', noindex = false, jsonLd } = Astro.props;
+const canonical = new URL(Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\.html$/, ''), siteConfig.url).href;
+const ogImage = new URL('/og-image.png', siteConfig.url).href;
+---
+<!doctype html>
+<html lang="en" data-page={page}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <link rel="canonical" href={canonical} />}
+
+    <!-- Applies the saved or system theme before the first paint, so the page never flashes the
+         wrong theme, and decides whether the sunrise entrance plays (once per visit). It is the
+         only inline script: its SHA-256 hash is allowed in the Content-Security-Policy. -->
+    <script is:inline>(function(){var d=document.documentElement,t=null;try{t=localStorage.getItem('dayprism-theme')}catch(e){}if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.setAttribute('data-theme',t);var s={start:performance.now(),rising:false};if(d.getAttribute('data-page')==='home'&&!matchMedia('(prefers-reduced-motion: reduce)').matches){var seen=null;try{seen=sessionStorage.getItem('dayprism-entrance')}catch(e){}if(!seen){s.rising=true;d.classList.add('rising');try{sessionStorage.setItem('dayprism-entrance','1')}catch(e){}}}window.prismSky=s})();</script>
+
+    <meta name="theme-color" content="#f4f6fa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1020" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="preload" href="/fonts/plus-jakarta-sans-800.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/plus-jakarta-sans-400.woff2" as="font" type="font/woff2" crossorigin />
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DayPrism" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Dawn light falling into a prism and fanning out into colours, under the DayPrism name. See the colours of your day." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Nav home={page === 'home'} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

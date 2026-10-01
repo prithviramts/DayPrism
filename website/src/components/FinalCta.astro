@@ -1,0 +1,39 @@
+---
+// The last call to action, with the sun low and golden, about to set (or the moon, at night).
+import PlayBadge from './PlayBadge.astro';
+interface Props { headline: string }
+const { headline } = Astro.props;
+---
+<section class="final" aria-labelledby="final-title">
+  <div class="dusk" aria-hidden="true"><span class="low-sun"></span></div>
+  <div class="wrap final-inner" data-reveal>
+    <h2 id="final-title" class="final-title">{headline}</h2>
+    <PlayBadge class="final-badge" />
+  </div>
+</section>
+
+<style>
+  .final { position: relative; isolation: isolate; overflow: clip; padding: clamp(7rem, 16vw, 12rem) 0 clamp(8rem, 18vw, 13rem); text-align: center; }
+  .dusk {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, var(--sky) 0%, #f7e3d6 55%, #f9c9a4 100%);
+  }
+  :global([data-theme='dark']) .dusk { background: linear-gradient(180deg, var(--sky) 0%, #141a33 60%, #1d2442 100%); }
+  .low-sun {
+    position: absolute;
+    left: 50%;
+    bottom: -16vmin;
+    width: 60vmin;
+    aspect-ratio: 1;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, #fff3dc 0%, #ffc27a 30%, rgba(255, 154, 60, 0.55) 55%, rgba(232, 80, 91, 0.18) 75%, transparent 100%);
+  }
+  :global([data-theme='dark']) .low-sun { width: 40vmin; bottom: -10vmin; background: radial-gradient(closest-side, #ffffff 0%, var(--moon) 30%, rgba(150, 170, 255, 0.25) 55%, transparent 100%); }
+  .final-inner { display: grid; justify-items: center; gap: 2rem; }
+  .final-title { font-size: var(--display); letter-spacing: -0.04em; max-width: 14ch; }
+  .final-inner :global(.play-wrap) { justify-items: center; }
+  .final-inner :global(.play-note) { color: var(--ink); }
+</style>

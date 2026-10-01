@@ -1,0 +1,72 @@
+---
+// "Get it on Google Play". While siteConfig.PLAY_STORE_URL is empty it shows a muted,
+// non-clickable "Coming soon" state and collects nothing. Fill in the URL to make every badge live.
+//
+// The official badge artwork (from https://play.google.com/intl/en_us/badges/) must be used for
+// the live badge, per Google's brand guidelines. Save it as src/assets/badges/google-play.png
+// (or .svg) and it's picked up automatically; until then a plain text button is shown, which
+// doesn't imitate Google's badge.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { siteConfig, isStoreLive } from '../site.config';
+
+interface Props { class?: string; note?: boolean }
+const { class: className = '', note = true } = Astro.props;
+const found = import.meta.glob<{ default: ImageMetadata }>('../assets/badges/google-play.{png,svg}', { eager: true });
+const badge = Object.values(found)[0]?.default;
+---
+{isStoreLive ? (
+  <a class:list={['play', 'play-live', className]} href={siteConfig.PLAY_STORE_URL} rel="noopener" aria-label="Get it on Google Play">
+    {badge ? <Image src={badge} alt="" height={56} class="play-img" /> : <span class="play-text"><span class="play-small">Get it on</span>Google Play</span>}
+  </a>
+) : (
+  <div class:list={['play-wrap', className]}>
+    <div class="play play-soon" role="img" aria-label="Get it on Google Play: coming soon">
+      {badge ? <Image src={badge} alt="" height={56} class="play-img" /> : <span class="play-text"><span class="play-small">Get it on</span>Google Play</span>}
+      <span class="play-ribbon" aria-hidden="true">Coming soon</span>
+    </div>
+    {note && <p class="play-note">In closed testing now. Watch this page: this button goes live on launch day.</p>}
+  </div>
+)}
+
+<style>
+  .play-wrap { display: grid; justify-items: inherit; gap: 0.55rem; }
+  .play {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 3.25rem;
+    padding: 0.45rem 1.4rem;
+    border-radius: 14px;
+    background: #0f172a;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    text-decoration: none;
+  }
+  .play-img { height: 3.25rem; width: auto; }
+  .play:has(.play-img) { padding: 0; background: none; border: 0; }
+  .play-text { display: grid; line-height: 1.1; font-weight: 700; font-size: 1.15rem; letter-spacing: -0.01em; }
+  .play-small { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85; }
+  .play-live { transition: transform 0.2s var(--ease-light); }
+  .play-live:hover { transform: translateY(-1px); }
+  .play-soon { cursor: default; }
+  :global([data-theme='dark']) .play { border-color: rgba(255, 255, 255, 0.32); background: #1b2340; }
+  .play-soon > :not(.play-ribbon) { opacity: 0.55; filter: grayscale(1); }
+  :global([data-theme='dark']) .play-soon > :not(.play-ribbon) { opacity: 0.7; }
+  .play-ribbon {
+    position: absolute;
+    top: -0.95rem;
+    right: -1.1rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #3b1d00;
+    background: linear-gradient(90deg, #ffc27a, var(--sun));
+    box-shadow: 0 4px 14px rgba(255, 154, 60, 0.35);
+    transform: rotate(4deg);
+  }
+  .play-note { font-size: var(--small); color: var(--ink-2); max-width: 22rem; }
+</style>

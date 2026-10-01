@@ -1,0 +1,159 @@
+---
+// The private investor page. Not linked anywhere, noindex, left out of the sitemap, and served
+// with "X-Robots-Tag: noindex" (see the security-headers integration). None of that makes it
+// private on its own: it MUST be protected with Cloudflare Access (see README) before launch.
+import { getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Phone from '../components/Phone.astro';
+import ScreenSlot from '../components/ScreenSlot.astro';
+import TodayScreen from '../components/screens/TodayScreen.astro';
+import InsightsScreen from '../components/screens/InsightsScreen.astro';
+import ContactLink from '../components/ContactLink.astro';
+import Icon from '../components/Icon.astro';
+import { siteConfig } from '../site.config';
+
+const d = (await getEntry('investors', 'investors'))!.data;
+const home = (await getEntry('home', 'home'))!.data;
+const { name, role } = siteConfig.founder;
+---
+<Base title="DayPrism · For investors" description="Private: DayPrism for investors." page="investors" noindex>
+  <div class="inv">
+    <header class="inv-hero">
+      <div class="glow" aria-hidden="true"></div>
+      <div class="wrap">
+        <p class="eyebrow">{d.intro.eyebrow}</p>
+        <h1>{d.intro.headline}</h1>
+        <p class="lead">{d.intro.sub}</p>
+        <p class="private"><Icon name="lock" size={16} /> Private page. Please don't share the link.</p>
+      </div>
+    </header>
+
+    <section class="section wrap block" aria-labelledby="opp">
+      <span class="num">01</span>
+      <div>
+        <h2 id="opp" class="h2">{d.opportunity.headline}</h2>
+        <p class="lead">{d.opportunity.text}</p>
+      </div>
+    </section>
+
+    <section class="section wrap block" aria-labelledby="prod">
+      <span class="num">02</span>
+      <div class="prod">
+        <div>
+          <h2 id="prod" class="h2">{d.product.headline}</h2>
+          <p class="lead">{d.product.text}</p>
+          <ul class="ticks" role="list">{d.product.shipped.map((s) => <li><Icon name="check" size={18} />{s}</li>)}</ul>
+          <p class="traction"><b>Traction:</b> {d.product.traction}</p>
+        </div>
+        <div class="phones" role="group" aria-label="Screens from DayPrism 1.6, with sample data">
+          <Phone class="inv-phone" tilt={false}>
+            <ScreenSlot name="today" alt="The DayPrism Today screen with eight tiles."><TodayScreen /></ScreenSlot>
+          </Phone>
+          <Phone class="inv-phone inv-phone-2" tilt={false}>
+            <ScreenSlot name="insights" alt="DayPrism Insights comparing sleep, energy and caffeine."><InsightsScreen /></ScreenSlot>
+          </Phone>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap block" aria-labelledby="diff">
+      <span class="num">03</span>
+      <div>
+        <h2 id="diff" class="h2">{d.different.headline}</h2>
+        <ul class="cards" role="list">
+          {d.different.points.map((p) => <li class="card"><h3>{p.title}</h3><p>{p.text}</p></li>)}
+        </ul>
+      </div>
+    </section>
+
+    <section class="section wrap block" aria-labelledby="model">
+      <span class="num">04</span>
+      <div>
+        <h2 id="model" class="h2">{d.model.headline}</h2>
+        <p class="lead">{d.model.text}</p>
+      </div>
+    </section>
+
+    <section class="section wrap block" aria-labelledby="road">
+      <span class="num">05</span>
+      <div>
+        <h2 id="road" class="h2">{d.roadmap.headline}</h2>
+        <ol class="road" role="list">
+          {d.roadmap.phases.map((p, i) => (
+            <li class:list={{ now: i === 0 }}>
+              <span class="phase">{p.name}</span>
+              <h3>{p.title}</h3>
+              <p>{p.text}</p>
+            </li>
+          ))}
+        </ol>
+        <p class="note"><span class="pill">Beta</span> {d.roadmap.note}</p>
+      </div>
+    </section>
+
+    <section class="section wrap block" aria-labelledby="fdr">
+      <span class="num">06</span>
+      <div>
+        <h2 id="fdr" class="h2">{d.founder.headline}</h2>
+        <blockquote><p>“{home.founder.quote}”</p></blockquote>
+        <p class="lead">{d.founder.story}</p>
+        <p class="sig"><b>{name}</b>, {role}</p>
+      </div>
+    </section>
+
+    <section class="section wrap block" aria-labelledby="ask">
+      <span class="num">07</span>
+      <div>
+        <h2 id="ask" class="h2">{d.ask.headline}</h2>
+        <p class="lead">{d.ask.text}</p>
+      </div>
+    </section>
+
+    <section class="section wrap block" aria-labelledby="talk">
+      <span class="num">08</span>
+      <div>
+        <h2 id="talk" class="h2">{d.contact.headline}</h2>
+        <p class="lead">{d.contact.text}</p>
+        <p class="mail"><Icon name="mail" size={20} /><ContactLink showAddress>Email the founder</ContactLink></p>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .inv-hero { position: relative; isolation: isolate; overflow: clip; padding: calc(var(--nav-h) + clamp(4rem, 10vw, 8rem)) 0 clamp(3rem, 8vw, 6rem); }
+  .glow { position: absolute; inset: 0; z-index: -1; background: radial-gradient(60% 70% at 50% 110%, color-mix(in srgb, var(--sun) 35%, transparent), transparent 70%), linear-gradient(180deg, var(--sky), var(--sky-2)); }
+  :global([data-theme='dark']) .glow { background: radial-gradient(50% 60% at 78% 0%, rgba(223, 231, 255, 0.14), transparent 70%), linear-gradient(180deg, #070b18, var(--sky)); }
+  h1 { font-size: var(--display); letter-spacing: -0.045em; max-width: 15ch; }
+  .inv-hero .lead { margin-top: 1.5rem; }
+  .private { display: inline-flex; align-items: center; gap: 0.45rem; margin-top: 2rem; font-size: 0.85rem; font-weight: 700; color: var(--ink-2); }
+  .block { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 1rem; border-top: 1px solid var(--line); padding-block: clamp(3.5rem, 8vw, 6.5rem); }
+  @media (max-width: 640px) { .block { grid-template-columns: 1fr; } }
+  .num { font-weight: 800; color: var(--sun-ink); font-variant-numeric: tabular-nums; padding-top: 0.6rem; }
+  :global([data-theme='dark']) .num { color: var(--window); }
+  .block .lead { margin-top: 1.25rem; }
+  .prod { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+  @media (max-width: 900px) { .prod { grid-template-columns: 1fr; } }
+  .ticks { list-style: none; display: grid; gap: 0.55rem; margin-top: 1.5rem; }
+  .ticks li { display: flex; gap: 0.6rem; align-items: flex-start; }
+  .ticks :global(.icon) { flex: none; margin-top: 0.2rem; color: var(--ok); }
+  .traction { margin-top: 1.5rem; padding: 1rem 1.2rem; border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); }
+  .traction b { color: var(--ink); }
+  .phones { display: flex; justify-content: center; gap: 1rem; }
+  .phones :global(.inv-phone) { width: min(42vw, 200px); }
+  .phones :global(.inv-phone-2) { margin-top: 3rem; }
+  .cards { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; margin-top: 2rem; }
+  .cards .card { padding: 1.4rem; }
+  .cards h3 { font-size: 1.1rem; margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+  .cards p { color: var(--ink-2); }
+  .road { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1rem; margin-top: 2rem; }
+  .road li { padding: 1.3rem; border-radius: var(--radius); border: 1px solid var(--line); }
+  .road li.now { border-color: color-mix(in srgb, var(--sun) 50%, transparent); background: color-mix(in srgb, var(--sun) 6%, transparent); }
+  .phase { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); }
+  .road h3 { font-size: 1.15rem; margin: 0.4rem 0; }
+  .road p { color: var(--ink-2); }
+  .note { margin-top: 1.25rem; color: var(--ink-2); display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+  blockquote { margin: 1.5rem 0 0; font-size: clamp(1.15rem, 1rem + 0.6vw, 1.45rem); font-weight: 600; line-height: 1.45; }
+  .sig { margin-top: 1.5rem; color: var(--ink-2); }
+  .mail { display: flex; align-items: center; gap: 0.6rem; margin-top: 1.5rem; font-size: 1.15rem; font-weight: 700; }
+</style>

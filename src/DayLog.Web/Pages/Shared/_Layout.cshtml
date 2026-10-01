@@ -1,0 +1,93 @@
+@inject DayLog.Web.Services.LocalClock Clock
+@inject DayLog.Web.Services.SettingsStore Settings
+@{
+    // Settings → Appearance: "system", "light" or "dark".
+    var theme = Settings.Current.Theme.ToString().ToLowerInvariant();
+}
+<!DOCTYPE html>
+<html lang="en" data-theme="@(theme == "dark" ? "dark" : "light")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="@(theme == "system" ? "light dark" : theme)" />
+    <title>@ViewData["Title"] · Daywise</title>
+
+    @* ---- Installable app (PWA). The manifest describes the app; the theme colour tints the
+       phone's status bar to match the page background in light and dark mode. *@
+    <link rel="manifest" href="/manifest.json" />
+    @if (theme == "system")
+    {
+        <meta name="theme-color" content="#f3f5f9" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0b1020" media="(prefers-color-scheme: dark)" />
+    }
+    else
+    {
+        <meta name="theme-color" content="@(theme == "dark" ? "#0b1020" : "#f3f5f9")" />
+    }
+    <link rel="icon" type="image/svg+xml" href="/icons/logo.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    @* iPhone: home-screen icon and full-screen mode (Safari still reads these older tags). *@
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Daywise" />
+
+    <script>
+        // Light or dark, decided before the page paints so it never flashes the wrong colours.
+        // "system" follows the phone and updates live; Bootstrap's own components follow along
+        // via data-bs-theme. Pages with charts listen for "themechange" to redraw.
+        (() => {
+            const pref = '@theme';
+            const media = matchMedia('(prefers-color-scheme: dark)');
+            const apply = () => {
+                const mode = pref === 'system' ? (media.matches ? 'dark' : 'light') : pref;
+                document.documentElement.dataset.theme = mode;
+                document.documentElement.dataset.bsTheme = mode;
+                document.dispatchEvent(new Event('themechange'));
+            };
+            apply();
+            if (pref === 'system') media.addEventListener('change', apply);
+        })();
+    </script>
+    @* Load the font early so text doesn't visibly swap fonts on first paint. *@
+    <link rel="preload" href="/fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div id="offline-banner" class="offline-banner" role="status" hidden>
+        You're offline. You're seeing the last saved version, and new entries can't be saved until you're back online.
+    </div>
+
+    @{
+        var page = ViewContext.RouteData.Values["page"]?.ToString();
+        string? Current(string p) => page == p ? "page" : null;
+    }
+
+    @* Top bar on every page: the logo + wordmark (links home) and today's date. *@
+    <header class="app-bar">
+        <a class="brand" asp-page="/Index" aria-label="Daywise, go to Today">
+            <img src="/icons/logo.svg" alt="" width="32" height="32">
+            <span class="wordmark" aria-hidden="true">Day<span>wise</span></span>
+        </a>
+        <span class="app-bar-date">@Clock.Today.ToString("ddd d MMM")</span>
+    </header>
+
+    <main class="app-main" role="main">
+        @RenderBody()
+    </main>
+
+    @* Icons come from /icons/ui.svg (Tabler Icons sprite). *@
+    <nav class="bottom-nav" aria-label="Main">
+        <a asp-page="/Index" aria-current="@Current("/Index")"><svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-sun" /></svg>Today</a>
+        <a asp-page="/History" aria-current="@Current("/History")"><svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-calendar-month" /></svg>History</a>
+        <a asp-page="/Insights" aria-current="@Current("/Insights")"><svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-chart-bar" /></svg>Insights</a>
+        <a asp-page="/Review" aria-current="@Current("/Review")"><svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-notebook" /></svg>Review</a>
+        <a asp-page="/Settings" aria-current="@Current("/Settings")"><svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-settings" /></svg>Settings</a>
+    </nav>
+
+    <script src="~/js/pwa.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

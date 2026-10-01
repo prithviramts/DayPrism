@@ -1,0 +1,49 @@
+---
+// FAQ as native <details> elements: keyboard and screen-reader accessible with no JavaScript.
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+const items = (await getCollection('faq')).sort((a, b) => a.id.localeCompare(b.id));
+---
+<section id="faq" class="faq section" aria-labelledby="faq-title">
+  <div class="wrap faq-grid">
+    <div>
+      <p class="eyebrow">FAQ</p>
+      <h2 id="faq-title" class="h2">Questions, answered plainly.</h2>
+    </div>
+    <div class="list">
+      {items.map(({ data }) => (
+        <details>
+          <summary><span>{data.q}</span><Icon name="plus" size={22} class="faq-icon" /></summary>
+          <div class="answer">
+            <p>{data.a}</p>
+            {data.link && <p><a href={data.link.href}>{data.link.text}</a></p>}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-grid { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(2rem, 6vw, 6rem); align-items: start; }
+  @media (max-width: 860px) { .faq-grid { grid-template-columns: 1fr; } }
+  details { border-bottom: 1px solid var(--line); }
+  details:first-child { border-top: 1px solid var(--line); }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 44px;
+    padding: 1.25rem 0;
+    font-weight: 700;
+    font-size: 1.08rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary :global(.faq-icon) { flex: none; color: var(--ink-2); transition: transform 0.3s var(--ease-light); }
+  details[open] summary :global(.faq-icon) { transform: rotate(45deg); }
+  .answer { padding: 0 0 1.4rem; color: var(--ink-2); max-width: 40rem; display: grid; gap: 0.7rem; }
+  .answer a { font-weight: 700; }
+</style>

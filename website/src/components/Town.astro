@@ -1,0 +1,20 @@
+---
+// The sleeping town as a lightweight SVG: the low-power hero fallback and the privacy section
+// backdrop. Windows are grouped into 12 buckets so CSS can light them one group at a time.
+import { generateTown, layerPath, windowBuckets, WIDTH, HEIGHT } from '../lib/town';
+
+interface Props { class?: string }
+const { class: className = '' } = Astro.props;
+const town = generateTown();
+const layers = [0, 1, 2] as const;
+---
+<svg class:list={['town', className]} viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+  {layers.map((layer) => (
+    <Fragment>
+      <path class={`town-l${layer}`} d={layerPath(town, layer)} />
+      <g class="town-windows">
+        {windowBuckets(town, layer).map((d, i) => d && <path class={`wb wb${i}`} d={d} />)}
+      </g>
+    </Fragment>
+  ))}
+</svg>

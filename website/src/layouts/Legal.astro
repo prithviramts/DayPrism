@@ -1,0 +1,56 @@
+---
+// Privacy policy, terms and delete-account pages: readable text, a table of contents and the
+// "last updated" date. The words come from src/content/legal/*.md.
+import { getEntry, render } from 'astro:content';
+import Base from './Base.astro';
+import ContactLink from '../components/ContactLink.astro';
+
+interface Props { id: 'privacy' | 'terms' | 'delete-account' }
+const entry = (await getEntry('legal', Astro.props.id))!;
+const { Content, headings } = await render(entry);
+const toc = headings.filter((h) => h.depth === 2);
+---
+<Base title={`${entry.data.title} · DayPrism`} description={entry.data.description}>
+  <article class="legal wrap">
+    <header class="legal-head">
+      <a class="back" href="/">← DayPrism</a>
+      <h1>{entry.data.title}</h1>
+      <p class="updated">Last updated: <time>{entry.data.updated}</time></p>
+    </header>
+    <div class="legal-body">
+      {toc.length > 2 && (
+        <nav class="toc" aria-label="On this page">
+          <p class="toc-title">On this page</p>
+          <ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+        </nav>
+      )}
+      <div class="prose">
+        <Content />
+        {Astro.props.id === 'delete-account' && (
+          <p class="contact">Email: <ContactLink showAddress>our contact address (turn on JavaScript to see it)</ContactLink></p>
+        )}
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .legal { padding-top: calc(var(--nav-h) + clamp(2rem, 6vw, 5rem)); padding-bottom: clamp(4rem, 10vw, 8rem); }
+  .legal-head { max-width: 44rem; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+  .back { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; text-decoration: none; }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); letter-spacing: -0.035em; margin-top: 0.5rem; }
+  .updated { margin-top: 1rem; color: var(--ink-2); }
+  .legal-body { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+  .legal-body:not(:has(.toc)) { grid-template-columns: minmax(0, 1fr); }
+  .toc { position: sticky; top: calc(var(--nav-h) + 1.5rem); font-size: 0.92rem; }
+  .toc-title { font-weight: 800; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 0.6rem; }
+  .toc ol { list-style: none; display: grid; }
+  .toc a { display: block; padding: 0.4rem 0; color: var(--ink-2); text-decoration: none; }
+  .toc a:hover { color: var(--ink); text-decoration: underline; }
+  .prose :global(h2:first-child) { margin-top: 0; }
+  .contact { font-weight: 600; }
+  @media (max-width: 860px) {
+    .legal-body { grid-template-columns: minmax(0, 1fr); }
+    .toc { position: static; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); }
+  }
+</style>

@@ -1,0 +1,73 @@
+---
+// A calm, factual comparison against categories of apps, never named competitors.
+// A real <table> on wide screens; on phones each row becomes a stacked card.
+import Icon from './Icon.astro';
+
+interface Cell { v: 'yes' | 'some' | 'no'; t: string }
+interface Props { eyebrow: string; headline: string; columns: string[]; note: string; rows: { label: string; cells: Cell[] }[] }
+const { eyebrow, headline, columns, note, rows } = Astro.props;
+const icon = { yes: 'check', some: 'minus', no: 'x' } as const;
+---
+<section id="compare" class="compare section" aria-labelledby="compare-title">
+  <div class="wrap">
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 id="compare-title" class="h2">{headline}</h2>
+    <div class="table-wrap" data-reveal>
+      <table>
+        <caption class="visually-hidden">DayPrism compared with typical habit trackers and typical health apps</caption>
+        <thead>
+          <tr>
+            <td></td>
+            {columns.map((c, i) => <th scope="col" class:list={{ us: i === 0 }}>{c}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <th scope="row">{r.label}</th>
+              {r.cells.map((c, i) => (
+                <td class:list={[`v-${c.v}`, { us: i === 0 }]} data-col={columns[i]}>
+                  <span class="mark"><Icon name={icon[c.v]} size={16} /></span>
+                  <span>{c.t}</span>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="note">{note}</p>
+  </div>
+</section>
+
+<style>
+  .table-wrap { margin-top: clamp(2.5rem, 5vw, 4rem); }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.98rem; }
+  th, td { padding: 1.05rem 1.1rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+  thead th { font-size: 0.95rem; font-weight: 800; color: var(--ink); border-bottom-color: color-mix(in srgb, var(--ink) 20%, transparent); }
+  tbody th { font-weight: 600; width: 28%; }
+  td { color: var(--ink-2); }
+  td > span:last-child { vertical-align: middle; }
+  .us { background: color-mix(in srgb, var(--brand) 6%, transparent); color: var(--ink); font-weight: 600; }
+  thead .us { border-radius: 16px 16px 0 0; color: var(--brand-ink); }
+  tbody tr:last-child .us { border-radius: 0 0 16px 16px; }
+  .mark { display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; margin-right: 0.5rem; border-radius: 50%; vertical-align: middle; }
+  .v-yes .mark { color: #fff; background: var(--ok); }
+  .v-some .mark { color: var(--some); background: color-mix(in srgb, var(--some) 14%, transparent); }
+  .v-no .mark { color: var(--no); background: color-mix(in srgb, var(--no) 14%, transparent); }
+  :global([data-theme='dark']) .v-yes .mark { color: #04281b; }
+  .note { margin-top: 1.25rem; font-size: 0.85rem; color: var(--ink-2); }
+
+  /* Phones: one card per row, with the column name next to each value. */
+  @media (max-width: 720px) {
+    table, thead, tbody, tr, th, td { display: block; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    tbody { display: grid; gap: 1rem; }
+    tbody tr { padding: 1.1rem 1.2rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+    tbody th { width: auto; padding: 0 0 0.6rem; border: 0; font-size: 1.05rem; font-weight: 800; }
+    td { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 0.6rem; padding: 0.45rem 0; border: 0; background: none !important; }
+    td::before { content: attr(data-col); grid-column: 1 / -1; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+    td.us::before { color: var(--brand-ink); }
+    .mark { margin: 0; }
+  }
+</style>

@@ -1,0 +1,15 @@
+# Dependencies and build output: never commit these.
+node_modules/
+dist/
+.astro/
+
+# Local environment files (the site needs no secrets, but never commit one by accident).
+.env
+.env.*
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

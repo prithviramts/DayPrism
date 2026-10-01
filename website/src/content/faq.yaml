@@ -1,0 +1,33 @@
+# Frequently asked questions, shown on the home page in this order.
+- q: Is DayPrism free?
+  a: >-
+    Yes. Logging, widgets, reminders, streaks, sync and core insights are free, with no ads and no
+    time limit. DayPrism Plus, coming soon, will add deeper insights and extras. The free app keeps
+    working fully either way.
+- q: Is my data safe?
+  a: >-
+    Your diary is stored in an encrypted database on your phone (SQLCipher, 256-bit AES). It's
+    backed up to your account over an encrypted connection, and the database only lets your
+    account read your entries. You can also lock the app with your fingerprint, face or PIN.
+- q: Can you see my entries?
+  a: >-
+    No. Access to entries is enforced by the database itself. DayPrism admins can see basic
+    account details (email, name, sign-up date and when you were last active) to provide support
+    and prevent abuse, but never what you logged.
+- q: Does it work offline?
+  a: >-
+    Yes. Everything you log is saved on your phone first, so DayPrism works fully without a
+    connection. It syncs to your account when you're back online.
+- q: Which phones does it work on?
+  a: >-
+    Android phones running Android 8.0 or newer. An iPhone app is coming soon.
+- q: Is DayPrism medical advice?
+  a: >-
+    No. DayPrism is a personal diary that shows patterns in your own data. It isn't a medical
+    device and doesn't diagnose or treat anything. Insights are correlations, not diagnoses, so
+    talk to a qualified professional about any health concern.
+- q: How do I delete my account?
+  a: >-
+    In the app, go to Settings and tap Delete account. Your account and every entry are deleted
+    from our database straight away. The delete-account page has the full details.
+  link: { href: /delete-account, text: How to delete your account }

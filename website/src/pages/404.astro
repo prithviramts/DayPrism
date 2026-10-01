@@ -1,0 +1,73 @@
+---
+// Lost in the dark: a small lantern lights up the way back home.
+import Base from '../layouts/Base.astro';
+---
+<Base title="Page not found · DayPrism" description="This page doesn't exist." page="error" noindex>
+  <section class="lost" data-theme="dark" aria-labelledby="lost-title">
+    <div class="beam" aria-hidden="true"></div>
+    <svg class="lantern" viewBox="0 0 80 120" width="80" height="120" aria-hidden="true" focusable="false">
+      <path class="ring" d="M30 14a10 10 0 0 1 20 0" />
+      <path class="frame" d="M26 22h28l4 8H22zM24 92h32l-3 8H27z" />
+      <rect class="glass" x="24" y="30" width="32" height="62" rx="6" />
+      <path class="flame" d="M40 52c5 7 8 12 8 18a8 8 0 0 1-16 0c0-6 3-11 8-18z" />
+    </svg>
+    <p class="code">404</p>
+    <h1 id="lost-title">Lost in the dark.</h1>
+    <p class="text">This page doesn't exist, or it moved. Follow the light back.</p>
+    <a class="home" href="/">Back home</a>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    position: relative;
+    isolation: isolate;
+    min-height: 100svh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.9rem;
+    padding: calc(var(--nav-h) + 2rem) var(--gutter) 4rem;
+    text-align: center;
+    color: var(--ink);
+    background: radial-gradient(60% 50% at 50% 30%, #111833, #070b18 70%);
+  }
+  .beam {
+    position: absolute;
+    z-index: -1;
+    left: 50%;
+    top: 22%;
+    width: min(90vw, 44rem);
+    aspect-ratio: 1;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 210, 122, 0.22), transparent);
+    opacity: 0.55;
+    transition: opacity 0.6s var(--ease-light);
+  }
+  .lantern { overflow: visible; }
+  .ring, .frame { fill: none; stroke: #8f9bb3; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+  .frame { fill: #1a2242; }
+  .glass { fill: rgba(255, 210, 122, 0.10); stroke: #8f9bb3; stroke-width: 3; }
+  .flame { fill: var(--window); filter: drop-shadow(0 0 10px rgba(255, 210, 122, 0.9)); transform-origin: 40px 76px; animation: flicker 2.6s ease-in-out infinite alternate; }
+  @keyframes flicker { 0% { transform: scale(0.94) rotate(-2deg); opacity: 0.85; } 100% { transform: scale(1.04) rotate(2deg); opacity: 1; } }
+  .code { font-weight: 800; letter-spacing: 0.2em; color: var(--window); margin-top: 0.5rem; }
+  h1 { font-size: clamp(2.2rem, 6vw, 4rem); letter-spacing: -0.04em; }
+  .text { color: var(--ink-2); max-width: 26rem; }
+  .home {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 1.6rem;
+    margin-top: 0.8rem;
+    border-radius: 999px;
+    font-weight: 800;
+    color: #3b1d00;
+    background: linear-gradient(90deg, #ffd27a, #ffb25c);
+    box-shadow: 0 0 0 0 rgba(255, 210, 122, 0);
+    text-decoration: none;
+    transition: box-shadow 0.4s var(--ease-light), transform 0.2s var(--ease-light);
+  }
+  .home:hover, .home:focus-visible { box-shadow: 0 0 40px 6px rgba(255, 210, 122, 0.45); transform: translateY(-1px); }
+  .lost:has(.home:hover, .home:focus-visible) .beam { opacity: 1; }
+</style>

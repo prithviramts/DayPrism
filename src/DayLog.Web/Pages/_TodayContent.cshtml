@@ -1,0 +1,80 @@
+@using DayLog.Web.Domain
+@model IndexModel
+@{
+    var day = Model.Day;
+
+    // A quick-add tile: tinted icon, label, and a one-line status for today.
+    // `action` tiles do something instantly (water); the rest open a sheet.
+    void Tile(string tint, string icon, string label, string sub, string? open = null, string? action = null, bool done = false)
+    {
+        <button type="button" class="tile @(done ? "done" : "")" style="--c: var(--tint-@tint)"
+                data-open="@open" data-action="@action">
+            <span class="tile-icon"><svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-@icon" /></svg></span>
+            <span class="tile-label">@label</span>
+            <span class="tile-sub">@sub</span>
+        </button>
+    }
+
+    var mealsSub = day.MealsEaten + day.MealsSkipped == 0 ? "None yet" : day.MealsEaten > 0 ? $"{day.MealsEaten} eaten" : $"{day.MealsSkipped} skipped";
+    var caffeineSub = day.CaffeineDrinks == 0 ? "None yet" : $"{day.CaffeineDrinks} · {day.CaffeineMg} mg";
+    var waterSub = day.WaterGlasses == 0 ? "One tap" : $"{day.WaterGlasses} so far";
+}
+
+@* The dynamic part of the Today page. Rendered on first load and re-fetched after every save. *@
+
+<section class="hero" aria-label="Energy check-in">
+    <h1 class="hero-greeting">@Model.Greeting</h1>
+    @if (day.LatestCheckIn is { } last)
+    {
+        <p class="hero-sub">How are you feeling now? Your last check-in was at @last.Time.ToString("HH:mm").</p>
+    }
+    else
+    {
+        <p class="hero-sub">How's your energy right now? Check-ins are what make your patterns visible.</p>
+    }
+    <button type="button" class="hero-cta" data-open="checkin">
+        <svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-bolt" /></svg>
+        Check in
+    </button>
+    @if (day.LatestCheckIn is { } l)
+    {
+        <span class="hero-last" title="Last check-in">Energy @l.Energy · Mood @l.Mood</span>
+    }
+</section>
+
+@if (day.RunningActivity is { } running)
+{
+    <section class="running-bar" aria-live="polite">
+        <span class="running-icon" aria-hidden="true">
+            <svg class="ico"><use href="/icons/ui.svg#i-player-play" /></svg>
+            <span class="pulse"></span>
+        </span>
+        <div class="running-text">
+            <strong>@DisplayNames.For(running.Category)</strong>
+            <span class="muted">since @running.StartTime.ToString("HH:mm") · <span data-elapsed="@running.StartTime.ToString("yyyy-MM-ddTHH:mm:ss")"></span></span>
+        </div>
+        <button type="button" class="btn-stop" data-action="stop-activity" data-id="@running.Id">
+            <svg class="ico" aria-hidden="true"><use href="/icons/ui.svg#i-player-stop" /></svg>Stop
+        </button>
+    </section>
+}
+
+<partial name="_DayStats" model="day" />
+
+<h2 class="section-title">Log something</h2>
+<section class="quick-grid" aria-label="Quick add">
+    @{ Tile("meal", "tools-kitchen-2", "Meal", mealsSub, open: "meal"); }
+    @{ Tile("caffeine", "coffee", "Caffeine", caffeineSub, open: "caffeine"); }
+    @{ Tile("water", "droplet", "+1 water", waterSub, action: "water"); }
+    @{ Tile("activity", day.RunningActivity is null ? "player-play" : "arrows-exchange",
+            day.RunningActivity is null ? "Activity" : "Switch",
+            day.RunningActivity is null ? "Start a timer" : "Change",
+            open: "activity"); }
+    @{ Tile("sleep", "moon", "Sleep", day.Sleep is { } s ? $"✓ {DisplayNames.Duration(s.Duration)}" : "Log last night", open: "sleep", done: day.Sleep is not null); }
+    @{ Tile("reflect", "pencil", "Reflect", day.Reflection is { } r ? $"✓ Rated {r.DayRating}/5" : "End of day", open: "reflection", done: day.Reflection is not null); }
+</section>
+
+<h2 class="section-title">Your day <span class="muted">tap anything for details</span></h2>
+<partial name="_Timeline" model="Model.Timeline" />
+
+<script type="application/json" id="day-state">@Json.Serialize(Model.ClientState)</script>

@@ -1,0 +1,216 @@
+@using DayLog.Web.Domain
+@{
+    // The add/edit sheets, shared by the Today and History pages. daylog.js opens them, fills them
+    // (defaults for a new entry, or the entry's current values when editing) and submits them.
+    // A sheet with the "editing" class shows its edit title and the Delete button.
+
+    // A 1–5 rating as five big tap targets (radio buttons styled as a segmented control).
+    void Rating(string form, string name, string label, string low, string high)
+    {
+        <fieldset class="field rating">
+            <legend>@label</legend>
+            <div class="seg seg-5">
+                @for (var i = 1; i <= 5; i++)
+                {
+                    <input type="radio" id="@form-@name-@i" name="@name" value="@i" required>
+                    <label for="@form-@name-@i">@i</label>
+                }
+            </div>
+            <div class="scale" aria-hidden="true"><span>@low</span><span>@high</span></div>
+        </fieldset>
+    }
+
+    // One-of-N choice for an enum, e.g. meal type.
+    void Choice(string form, string name, string label, IEnumerable<(string Value, string Text)> options)
+    {
+        <fieldset class="field">
+            <legend>@label</legend>
+            <div class="seg">
+                @foreach (var (value, text) in options)
+                {
+                    <input type="radio" id="@form-@name-@value" name="@name" value="@value" required>
+                    <label for="@form-@name-@value">@text</label>
+                }
+            </div>
+        </fieldset>
+    }
+
+    void TimeField(string form, string name = "time", string label = "Time")
+    {
+        <label class="field field-inline" for="@form-@name">
+            <span>@label</span>
+            <input type="time" id="@form-@name" name="@name" required>
+        </label>
+    }
+
+    void SheetHeader(string title, string editTitle)
+    {
+        <header class="sheet-head">
+            <h2 data-title-add="@title" data-title-edit="@editTitle">@title</h2>
+            <button type="button" class="sheet-close" data-close aria-label="Close">✕</button>
+        </header>
+    }
+
+    void SheetFooter(string saveText)
+    {
+        <div class="form-errors" role="alert"></div>
+        <div class="sheet-actions">
+            <button type="button" class="btn-danger sheet-delete" data-action="delete-current">Delete</button>
+            <button class="btn-save" data-save-add="@saveText" data-save-edit="Save changes">@saveText</button>
+        </div>
+    }
+
+    void Note(string form, string name, string label, int max, string? placeholder = null)
+    {
+        <label class="field" for="@form-@name"><span>@label <small class="muted">optional</small></span>
+            <input type="text" id="@form-@name" name="@name" maxlength="@max" autocomplete="off" placeholder="@placeholder">
+        </label>
+    }
+
+    var mealTypes = Enum.GetValues<MealType>().Select(t => (t.ToString(), t.ToString()));
+    var mealSizes = Enum.GetValues<MealSize>().Select(s => (s.ToString(), s.ToString()));
+}
+
+<dialog class="sheet" id="sheet-checkin" aria-label="Energy check-in">
+    <form data-form="checkin" novalidate>
+        @{ SheetHeader("Energy check-in", "Edit check-in"); }
+        @{ Rating("checkin", "energy", "Energy", "Drained", "Buzzing"); }
+        @{ Rating("checkin", "sleepiness", "Sleepiness", "Wide awake", "Nodding off"); }
+        @{ Rating("checkin", "mood", "Mood", "Low", "Great"); }
+        @{ Note("checkin", "note", "Note", 1000, "e.g. after back-to-back calls"); }
+        @{ TimeField("checkin"); }
+        @{ SheetFooter("Save check-in"); }
+    </form>
+</dialog>
+
+<dialog class="sheet" id="sheet-meal" aria-label="Meal">
+    <form data-form="meal" novalidate>
+        @{ SheetHeader("Meal", "Edit meal"); }
+        @{ Choice("meal", "mealType", "Meal", mealTypes); }
+        <label class="toggle"><input type="checkbox" name="skipped"> <span>I skipped this meal</span></label>
+        <div class="meal-details">
+            <label class="field" for="meal-description"><span>What did you eat?</span>
+                <input type="text" id="meal-description" name="description" maxlength="1000" autocomplete="off">
+            </label>
+            @{ Choice("meal", "size", "Size", mealSizes); }
+        </div>
+        @{ TimeField("meal"); }
+        @{ SheetFooter("Save meal"); }
+    </form>
+</dialog>
+
+<dialog class="sheet" id="sheet-caffeine" aria-label="Caffeine">
+    <form data-form="caffeine" novalidate>
+        @{ SheetHeader("Caffeine", "Edit caffeine"); }
+        <fieldset class="field">
+            <legend>Type</legend>
+            <div class="grid-choice">
+                @foreach (var type in Enum.GetValues<CaffeineType>())
+                {
+                    <input type="radio" id="caffeine-type-@type" name="type" value="@type" data-mg="@CaffeineDefaults.MgPerServing(type)" required>
+                    <label for="caffeine-type-@type"><span aria-hidden="true">@DisplayNames.IconFor(type)</span> @DisplayNames.For(type)</label>
+                }
+            </div>
+        </fieldset>
+        <div class="field-row">
+            <label class="field" for="caffeine-servings"><span>Servings</span>
+                <input type="number" id="caffeine-servings" name="servings" min="0.5" max="10" step="0.5" value="1" inputmode="decimal">
+            </label>
+            <label class="field" for="caffeine-mg"><span>Caffeine (mg)</span>
+                <input type="number" id="caffeine-mg" name="caffeineMg" min="0" max="2000" inputmode="numeric" placeholder="auto">
+            </label>
+        </div>
+        @{ TimeField("caffeine"); }
+        @{ SheetFooter("Save caffeine"); }
+    </form>
+</dialog>
+
+<dialog class="sheet" id="sheet-water" aria-label="Water">
+    <form data-form="water" novalidate>
+        @{ SheetHeader("Water", "Edit water"); }
+        <label class="field field-inline" for="water-glasses"><span>Glasses</span>
+            <input type="number" id="water-glasses" name="glasses" min="1" max="10" value="1" inputmode="numeric" required>
+        </label>
+        @{ TimeField("water"); }
+        @{ SheetFooter("Save water"); }
+    </form>
+</dialog>
+
+<dialog class="sheet" id="sheet-activity" aria-label="Activity">
+    <form data-form="activity" novalidate>
+        @{ SheetHeader("Activity", "Edit activity"); }
+        <fieldset class="field">
+            <legend>What are you doing?</legend>
+            <div class="grid-choice grid-3">
+                @foreach (var category in Enum.GetValues<ActivityCategory>())
+                {
+                    <input type="radio" id="activity-cat-@category" name="category" value="@category" required>
+                    <label for="activity-cat-@category" class="fam-@DisplayNames.FamilyOf(category)">@DisplayNames.For(category)</label>
+                }
+            </div>
+        </fieldset>
+        @{ TimeField("activity", "startTime", "Started"); }
+        <label class="toggle"><input type="checkbox" name="finished"> <span>Finished (has an end time)</span></label>
+        <div class="end-time">
+            @{ TimeField("activity", "endTime", "Ended"); }
+            <p class="hint muted">An end time earlier than the start counts as the next day.</p>
+        </div>
+        @{ Note("activity", "notes", "Notes", 1000); }
+        <p class="hint muted add-only">Starting a new activity stops the one that's running.</p>
+        @{ SheetFooter("Start"); }
+    </form>
+</dialog>
+
+<dialog class="sheet" id="sheet-sleep" aria-label="Sleep">
+    <form data-form="sleep" novalidate>
+        @{ SheetHeader("Sleep", "Edit sleep"); }
+        <div class="field-row">
+            @{ TimeField("sleep", "bedTime", "Went to bed"); }
+            @{ TimeField("sleep", "wakeTime", "Woke up"); }
+        </div>
+        <p class="hint muted" data-sleep-duration></p>
+        @{ Rating("sleep", "quality", "Quality", "Terrible", "Great"); }
+        <label class="field field-inline" for="sleep-woken"><span>Times woken up</span>
+            <input type="number" id="sleep-woken" name="timesWoken" min="0" max="30" value="0" inputmode="numeric">
+        </label>
+        @{ Note("sleep", "notes", "Notes", 2000); }
+        @{ SheetFooter("Save sleep"); }
+    </form>
+</dialog>
+
+<dialog class="sheet" id="sheet-reflection" aria-label="Reflection">
+    <form data-form="reflection" novalidate>
+        @{ SheetHeader("End-of-day reflection", "Edit reflection"); }
+        <label class="field" for="reflection-well"><span>What went well?</span>
+            <textarea id="reflection-well" name="wentWell" rows="2" maxlength="2000"></textarea>
+        </label>
+        <label class="field" for="reflection-bad"><span>What didn't?</span>
+            <textarea id="reflection-bad" name="didntGoWell" rows="2" maxlength="2000"></textarea>
+        </label>
+        <label class="field" for="reflection-diff"><span>One thing to do differently tomorrow</span>
+            <textarea id="reflection-diff" name="doDifferently" rows="2" maxlength="2000"></textarea>
+        </label>
+        @{ Rating("reflection", "dayRating", "Overall day", "Bad", "Great"); }
+        @{ SheetFooter("Save reflection"); }
+    </form>
+</dialog>
+
+@* Opened by tapping something on the timeline. *@
+<dialog class="sheet" id="sheet-detail" aria-label="Entry details">
+    <div class="sheet-body">
+        <header class="sheet-head">
+            <h2>Entry</h2>
+            <button type="button" class="sheet-close" data-close aria-label="Close">✕</button>
+        </header>
+        <p data-detail-text></p>
+        <div class="sheet-actions">
+            <button type="button" class="btn-danger" data-action="delete-detail">Delete</button>
+            <button type="button" class="btn-save" data-action="edit-detail">Edit</button>
+        </div>
+    </div>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    <span data-toast-text></span>
+    <button type="button" data-toast-action hidden>Undo</button>
+</div>

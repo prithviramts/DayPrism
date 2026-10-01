@@ -1,0 +1,167 @@
+@page
+@using DayLog.Web.Domain
+@model SettingsModel
+@{
+    ViewData["Title"] = "Settings";
+    var seedRows = Model.Counts.Sum(c => c.Seed);
+    var totalRows = Model.Counts.Sum(c => c.Total);
+}
+
+<div class="page-head">
+    <h1>Settings</h1>
+</div>
+
+@if (Model.StatusMessage is not null)
+{
+    <div class="notice success" role="status">@Model.StatusMessage</div>
+}
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="notice error" role="alert">Some settings need fixing. See the messages below.</div>
+}
+
+@* ---------------------------------------------------------------- preferences (one form, one Save) *@
+<form method="post" asp-page-handler="Save" class="settings-form">
+    <section class="card-surface settings-section" aria-labelledby="h-you">
+        <h2 id="h-you">You</h2>
+        <label class="field" asp-for="Input.DisplayName">
+            <span>Your name <small class="muted">optional, used in the greeting</small></span>
+            <input type="text" asp-for="Input.DisplayName" maxlength="40" autocomplete="given-name" placeholder="Prithvi">
+            <span asp-validation-for="Input.DisplayName" class="field-error"></span>
+        </label>
+
+        <fieldset class="field">
+            <legend>Appearance</legend>
+            <div class="seg">
+                @foreach (var theme in Enum.GetValues<ThemePreference>())
+                {
+                    <input type="radio" id="theme-@theme" name="Input.Theme" value="@theme" checked="@(Model.Input.Theme == theme)">
+                    <label for="theme-@theme">@theme</label>
+                }
+            </div>
+            <span class="hint muted">System follows your phone's light or dark mode.</span>
+        </fieldset>
+    </section>
+
+    <section class="card-surface settings-section" aria-labelledby="h-goals">
+        <h2 id="h-goals">Daily goals</h2>
+        <p class="hint muted">The rings on Today and History fill towards these.</p>
+        <div class="goal-grid">
+            <label class="field" asp-for="Input.SleepTargetHours">
+                <span>Sleep (hours)</span>
+                <input type="number" asp-for="Input.SleepTargetHours" min="4" max="12" step="0.5" inputmode="decimal">
+                <span asp-validation-for="Input.SleepTargetHours" class="field-error"></span>
+            </label>
+            <label class="field" asp-for="Input.WaterTargetGlasses">
+                <span>Water (glasses)</span>
+                <input type="number" asp-for="Input.WaterTargetGlasses" min="1" max="20" inputmode="numeric">
+                <span asp-validation-for="Input.WaterTargetGlasses" class="field-error"></span>
+            </label>
+            <label class="field" asp-for="Input.MealsTarget">
+                <span>Meals</span>
+                <input type="number" asp-for="Input.MealsTarget" min="1" max="6" inputmode="numeric">
+                <span asp-validation-for="Input.MealsTarget" class="field-error"></span>
+            </label>
+            <label class="field" asp-for="Input.CaffeineLimitMg">
+                <span>Caffeine limit (mg)</span>
+                <input type="number" asp-for="Input.CaffeineLimitMg" min="50" max="1000" step="10" inputmode="numeric">
+                <span asp-validation-for="Input.CaffeineLimitMg" class="field-error"></span>
+            </label>
+        </div>
+    </section>
+
+    <section class="card-surface settings-section" aria-labelledby="h-tz">
+        <h2 id="h-tz">Time zone</h2>
+        <label class="field" asp-for="Input.TimeZoneId">
+            <span>Your time zone</span>
+            <select asp-for="Input.TimeZoneId">
+                @foreach (var (id, label) in Model.TimeZones)
+                {
+                    <option value="@id" selected="@(id == Model.Input.TimeZoneId)">@label</option>
+                }
+            </select>
+            <span asp-validation-for="Input.TimeZoneId" class="field-error"></span>
+        </label>
+        <p class="hint muted">Now: @Model.LocalTime. Changing this affects new entries and what counts as "today". Entries you've already logged keep the time you saw when you logged them.</p>
+    </section>
+
+    <button class="btn-save save-sticky">Save settings</button>
+</form>
+
+@* ---------------------------------------------------------------- install *@
+@* Exactly one of the three install states is shown; pwa.js picks it. *@
+<section class="card-surface settings-section" aria-labelledby="h-install">
+    <h2 id="h-install">Install on your phone</h2>
+    <div data-install-state="installed" hidden>
+        <p class="mb-0">✓ Daywise is installed. You're using it as an app.</p>
+    </div>
+    <div data-install-state="available" hidden>
+        <p class="hint muted">Adds Daywise to your home screen. It opens full screen, like an app, and pages you've visited still open when you're offline.</p>
+        <button type="button" class="btn-save" data-action="install">Install Daywise</button>
+    </div>
+    <div data-install-state="manual">
+        <ul class="install-steps">
+            <li><strong>iPhone (Safari):</strong> tap Share, then <em>Add to Home Screen</em>.</li>
+            <li><strong>Android (Chrome):</strong> menu ⋮, then <em>Install app</em> (or <em>Add to Home screen</em>).</li>
+        </ul>
+        <p class="hint muted">Installing needs a secure address: <code>https://…</code>, or <code>localhost</code> on this computer. Over plain Wi-Fi (<code>http://192.168…</code>) you'll only get a bookmark-style shortcut. See "Using Daywise on your phone" in the README.</p>
+    </div>
+    <p class="hint muted">Long-press the installed icon for shortcuts: Check-in, Meal, Caffeine, +1 water.</p>
+</section>
+
+@* ---------------------------------------------------------------- data *@
+<section class="card-surface settings-section" aria-labelledby="h-data">
+    <h2 id="h-data">Your data</h2>
+    <table class="plain-table">
+        <thead><tr><th>Entries</th><th class="num">Yours</th><th class="num">Demo</th></tr></thead>
+        <tbody>
+        @foreach (var c in Model.Counts)
+        {
+            <tr><td>@c.Table</td><td class="num">@c.Real</td><td class="num">@c.Seed</td></tr>
+        }
+        </tbody>
+    </table>
+    <div class="btn-row">
+        <a class="btn-save" href="/backup">Download backup (.db)</a>
+        <a class="btn-plain" href="/export/data.csv">Export all (.csv)</a>
+    </div>
+    <p class="hint muted">The backup is a complete copy of the database; restore it with the steps in the README. The CSV has every entry, one row each, for Excel. For one month, use the Review page.</p>
+</section>
+
+<section class="card-surface settings-section" aria-labelledby="h-demo">
+    <h2 id="h-demo">Demo data</h2>
+    <p class="hint muted">Demo rows are marked separately. Wiping them never deletes entries you logged yourself.</p>
+    <div class="btn-row">
+        <form method="post" asp-page-handler="WipeSeed"
+              onsubmit="return confirm('Delete all @seedRows demo rows? Your real entries stay.');">
+            <button class="btn-plain" disabled="@(seedRows == 0)">Wipe demo data</button>
+        </form>
+        <form method="post" asp-page-handler="Reseed"
+              onsubmit="return confirm('Replace demo data with a fresh set ending today?');">
+            <button class="btn-plain">Re-generate demo data</button>
+        </form>
+    </div>
+</section>
+
+<section class="card-surface settings-section danger-zone" aria-labelledby="h-danger">
+    <h2 id="h-danger">Delete all entries</h2>
+    <p class="hint">Permanently deletes all @totalRows entries, yours and demo: sleep, meals, caffeine, water, check-ins, activities and reflections. Your settings are kept. <strong>Download a backup first</strong> if you might want them back.</p>
+    <form method="post" asp-page-handler="DeleteAll" class="delete-form">
+        <label class="field" asp-for="ConfirmDelete">
+            <span>Type <code>@SettingsModel.DeleteConfirmWord</code> to confirm</span>
+            <input type="text" asp-for="ConfirmDelete" autocomplete="off" autocapitalize="characters" spellcheck="false">
+            <span asp-validation-for="ConfirmDelete" class="field-error"></span>
+        </label>
+        <button class="btn-danger" disabled="@(totalRows == 0)">Delete everything</button>
+    </form>
+</section>
+
+@* ---------------------------------------------------------------- about *@
+<section class="settings-section about" aria-labelledby="h-about">
+    <img src="/icons/logo.svg" alt="" width="44" height="44">
+    <div>
+        <h2 id="h-about">Daywise <span class="muted">v@(SettingsModel.Version)</span></h2>
+        <p class="hint muted">Learn from your days. Data is stored on this device's server in <code>@Model.DatabasePath</code>.</p>
+        <p class="hint muted">Font: Plus Jakarta Sans (SIL OFL). Icons: Tabler Icons (MIT). Charts: Chart.js (MIT).</p>
+    </div>
+</section>

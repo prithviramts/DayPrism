@@ -1,0 +1,51 @@
+---
+import Icon from './Icon.astro';
+interface Props {
+  eyebrow: string;
+  headline: string;
+  free: { name: string; text: string; items: string[] };
+  plus: { name: string; text: string };
+  line: string;
+}
+const { eyebrow, headline, free, plus, line } = Astro.props;
+---
+<section id="pricing" class="pricing section" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 id="pricing-title" class="h2">{headline}</h2>
+    <div class="plans">
+      <article class="card plan plan-free" data-reveal>
+        <h3>{free.name}</h3>
+        <p class="price"><span class="amount">Free</span></p>
+        <p class="desc">{free.text}</p>
+        <ul role="list">
+          {free.items.map((i) => <li><Icon name="check" size={18} />{i}</li>)}
+        </ul>
+      </article>
+      <article class="card plan plan-plus" data-reveal>
+        <span class="pill">Coming soon</span>
+        <h3>{plus.name}</h3>
+        <p class="price"><span class="tba">Price to be announced</span></p>
+        <p class="desc">{plus.text}</p>
+      </article>
+    </div>
+    <p class="line">{line}</p>
+  </div>
+</section>
+
+<style>
+  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 1.25rem; margin-top: clamp(2.5rem, 5vw, 4rem); }
+  .plan { padding: clamp(1.6rem, 3vw, 2.4rem); }
+  .plan-free { border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .plan-plus { background: linear-gradient(160deg, color-mix(in srgb, var(--brand-2) 8%, var(--surface)), var(--surface)); }
+  .plan-plus .pill { margin-bottom: 1rem; }
+  h3 { font-size: 1.3rem; letter-spacing: -0.02em; }
+  .price { margin: 0.7rem 0 0.4rem; }
+  .amount { font-size: clamp(2.6rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -0.04em; }
+  .tba { display: inline-block; padding-top: 0.6rem; font-size: 1.1rem; font-weight: 700; color: var(--ink-2); }
+  .desc { color: var(--ink-2); }
+  ul { list-style: none; display: grid; gap: 0.6rem; margin-top: 1.4rem; }
+  li { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; }
+  li :global(.icon) { flex: none; color: var(--ok); }
+  .line { margin-top: 2rem; font-size: clamp(1.05rem, 1rem + 0.4vw, 1.25rem); font-weight: 700; text-align: center; text-wrap: balance; }
+</style>

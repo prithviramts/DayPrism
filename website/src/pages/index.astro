@@ -1,0 +1,51 @@
+---
+import { getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import PrismSection from '../components/PrismSection.astro';
+import Problem from '../components/Problem.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Features from '../components/Features.astro';
+import Privacy from '../components/Privacy.astro';
+import Compare from '../components/Compare.astro';
+import Pricing from '../components/Pricing.astro';
+import Founder from '../components/Founder.astro';
+import Faq from '../components/Faq.astro';
+import FinalCta from '../components/FinalCta.astro';
+import { siteConfig, isStoreLive } from '../site.config';
+
+const home = (await getEntry('home', 'home'))!.data;
+
+// Structured data for search engines. Deliberately no rating: we have none to report.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'DayPrism',
+  description: 'Log sleep, meals, caffeine, water, energy and mood in seconds, and see what makes your best days. Private by design.',
+  operatingSystem: `Android ${siteConfig.app.minAndroid}+`,
+  applicationCategory: 'HealthApplication',
+  applicationSubCategory: 'Health & Fitness',
+  url: siteConfig.url,
+  image: new URL('/icon-512.png', siteConfig.url).href,
+  softwareVersion: siteConfig.app.version,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  ...(isStoreLive ? { installUrl: siteConfig.PLAY_STORE_URL } : {}),
+};
+---
+<Base title="DayPrism: see the colours of your day" description="DayPrism is a private, ad-free day tracker. Log your day in seconds and see what makes your best ones." page="home" jsonLd={jsonLd}>
+  <Hero {...home.hero} />
+  <PrismSection {...home.meaning} />
+  <Problem {...home.problem} />
+  <HowItWorks {...home.how} />
+  <Features {...home.features} />
+  <Privacy {...home.privacy} />
+  <Compare {...home.compare} />
+  <Pricing {...home.pricing} />
+  <Founder {...home.founder} />
+  <Faq />
+  <FinalCta {...home.final} />
+</Base>
+
+<script>
+  import '../scripts/motion-loader';
+</script>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Daywise">
+  <!-- Same geometry as tools/make-icons.ps1 (64-unit grid): a "D" holding a sun. -->
+  <rect width="64" height="64" rx="14" fill="#2a78d6"/>
+  <path d="M19.5 16V48H28C38.5 48 44.5 41 44.5 32C44.5 23 38.5 16 28 16Z" fill="none" stroke="#fff" stroke-width="4.75" stroke-linejoin="round"/>
+  <circle cx="31" cy="32" r="5.25" fill="#fff"/>
+</svg>
